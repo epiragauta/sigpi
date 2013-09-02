@@ -79,6 +79,7 @@
       this.btnAbout.TabIndex = 18;
       this.btnAbout.Text = "&Acerca de...";
       this.btnAbout.UseVisualStyleBackColor = true;
+      this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
       // 
       // btnCerrar
       // 
