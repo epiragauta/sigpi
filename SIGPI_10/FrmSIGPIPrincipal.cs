@@ -45,8 +45,8 @@ namespace SIGPI_10
       string sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
       sPath = sPath + "\\" + "parameters";
       logger.Info("FrmSIGPIPrincipal  :: sPath :: {0}",sPath);
-      System.Console.WriteLine(sPath);
-      MessageBox.Show(sPath,"sPath");
+      //System.Console.WriteLine(sPath);
+      //MessageBox.Show(sPath,"sPath");
       
       sPath = sPath.Replace("file:\\", "");
       //MessageBox.Show("parametros: " + sPath + "\\parametros.xml");

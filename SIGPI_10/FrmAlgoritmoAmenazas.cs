@@ -195,7 +195,7 @@ namespace SIGPI_10
       try
       {
         XmlSerializer serializer = new XmlSerializer(typeof(SIGPIParametros));
-        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parametros.xml");
+        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parameters\\parametros.xml");
         parametros = (SIGPIParametros)serializer.Deserialize(r);
         r.Close();
         serializer = null;
