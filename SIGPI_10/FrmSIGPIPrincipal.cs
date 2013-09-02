@@ -291,12 +291,7 @@ namespace SIGPI_10
 
       //  MessageBox.Show("FinSS");
     }
-
-    private void richTextBox1_TextChanged(object sender, EventArgs e)
-    {
-
-    }
-
+    
     private void btnModelo2_Click(object sender, EventArgs e)
     {
       FrmAlgoritmoAmenazas frmAmenazas = new FrmAlgoritmoAmenazas(m_pApp, sigpi.FechaProcesamiento);
@@ -413,7 +408,7 @@ namespace SIGPI_10
       MessageBox.Show("Algoritmo completo ejecutado");
     }
 
-    private void button1_Click_1(object sender, EventArgs e)
+    private void btnAbout_Click(object sender, EventArgs e)
     {
       FrmAboutBox about = new FrmAboutBox();
       about.ShowDialog();

@@ -77,19 +77,20 @@ namespace SIGPI_10
         MessageBox.Show("Busque las capa de precipitacion solicitadas");
         return;
       }
-      string sRasterPrecipitacionSatelite = txtRutaPrecipitacion.Text;
-      string sFecha = txtRutaPrecipitacion.Text.Substring(txtRutaPrecipitacion.Text.IndexOf('_'), 20).Replace("_satelite_", "");
-      String[] sFecha2 = sFecha.Split('_');
-      DateTime dFechaPrecipitacionSatelite = new DateTime(Convert.ToInt32(sFecha2[0]), Convert.ToInt32(sFecha2[1]), Convert.ToInt32(sFecha2[2]));
+      
+      //string sRasterPrecipitacionSatelite = txtRutaPrecipitacion.Text;
+      //string sFecha = txtRutaPrecipitacion.Text.Substring(txtRutaPrecipitacion.Text.IndexOf('_'), 20).Replace("_satelite_", "");
+      //String[] sFecha2 = sFecha.Split('_');
+      //DateTime dFechaPrecipitacionSatelite = new DateTime(Convert.ToInt32(sFecha2[0]), Convert.ToInt32(sFecha2[1]), Convert.ToInt32(sFecha2[2]));
       String[] sRastersPrecipitacionX10 = new String[10];
-      DateTime dTemp;
-      String sTemp;
-      for (int i = 0; i < 10; i++)
-      {
-        dTemp = dFechaPrecipitacionSatelite.AddDays(-i);
-        sTemp = dTemp.ToString("yyyy_MM_dd"); //  +"_" + dTemp.ToString("MM") + "_" + dTemp.ToString("dd");
-        sRastersPrecipitacionX10[i] = sRasterPrecipitacionSatelite.Replace(sFecha, sTemp);
-      }
+      //DateTime dTemp;
+      //String sTemp;
+      //for (int i = 0; i < 10; i++)
+      //{
+      //  dTemp = dFechaPrecipitacionSatelite.AddDays(-i);
+      //  sTemp = dTemp.ToString("yyyy_MM_dd"); //  +"_" + dTemp.ToString("MM") + "_" + dTemp.ToString("dd");
+      //  sRastersPrecipitacionX10[i] = sRasterPrecipitacionSatelite.Replace(sFecha, sTemp);
+      //}
 
       GenerarModelo("PRECIPITACION_PROMEDIO", "PRECIPITACION_PROMEDIO.SUM_PREC >= 0", "",
                       "TEMPERATURA_PROMEDIO", "TEMPERATURA_PROMEDIO.TEMP_PROM >= 0",
@@ -456,34 +457,36 @@ namespace SIGPI_10
 
         if (bUsarSatelite)
         {
-          Geoprocessor gp1 = new Geoprocessor();
-          extractValPoint.in_raster = sRastersPrecipitacion[i];  // txtRutaPrecipitacion.Text;
-          extractValPoint.out_point_features = sEstVirtualesPrecipitacion + i.ToString();
+          //Geoprocessor gp1 = new Geoprocessor();
+          //extractValPoint.in_raster = sRastersPrecipitacion[i];  // txtRutaPrecipitacion.Text;
+          //extractValPoint.out_point_features = sEstVirtualesPrecipitacion + i.ToString();
 
-          try
-          {
-            gp1.Execute(extractValPoint, null);
-          }
-          catch (Exception ex)
-          {
-            MessageBox.Show(ex.Message);
-          }
+          //try
+          //{
+          //  gp1.Execute(extractValPoint, null);
+          //}
+          //catch (Exception ex)
+          //{
+          //  MessageBox.Show(ex.Message);
+          //}
 
-          Merge merge = new Merge();
-          string sInputMerge = sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString();
-          merge.inputs = sInputMerge;
-          //"[" + sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString() + "]" ;
-          merge.output = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
-          try
-          {
-            gp.Execute(merge, null);
-          }
-          catch (Exception ex)
-          {
-            MessageBox.Show(ex.Message);
-          }
+          //Merge merge = new Merge();
+          //string sInputMerge = sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString();
+          //merge.inputs = sInputMerge;
+          ////"[" + sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString() + "]" ;
+          //merge.output = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+          //try
+          //{
+          //  gp.Execute(merge, null);
+          //}
+          //catch (Exception ex)
+          //{
+          //  MessageBox.Show(ex.Message);
+          //}
 
-          idw.in_point_features = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+          //idw.in_point_features = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+
+          idw.in_point_features = sRutaFileGDB + "\\" + sNombreTabla + i.ToString();
         }
         else
         {
@@ -504,7 +507,9 @@ namespace SIGPI_10
         dPeso = iPesos[i] / iTotalPesos;
         sExpression += "( Raster('" + sOutGrid + "') * " + dPeso.ToString() + ")";
         if (i < 9)
+        {
           sExpression += " + ";
+        }
 
       }
 
@@ -672,37 +677,37 @@ namespace SIGPI_10
 
       if (txtRutaNVI.Text.Trim() != "")
       {
-        Geoprocessor gp2 = new Geoprocessor();
-        Con pCon = new Con();
-        pCon.in_conditional_raster = txtRutaNVI.Text;
-        pCon.in_true_raster_or_constant = 0;
-        pCon.in_false_raster_or_constant = -1;
-        pCon.where_clause = "VALUE <= 0";
-        pCon.out_raster = sNVITempReclass;
-        try
-        {
-          gp2.Execute(pCon, null);
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-        gp2 = null;
+        //Geoprocessor gp2 = new Geoprocessor();
+        //Con pCon = new Con();
+        //pCon.in_conditional_raster = txtRutaNVI.Text;
+        //pCon.in_true_raster_or_constant = 0;
+        //pCon.in_false_raster_or_constant = -1;
+        //pCon.where_clause = "VALUE <= 0";
+        //pCon.out_raster = sNVITempReclass;
+        //try
+        //{
+        //  gp2.Execute(pCon, null);
+        //}
+        //catch (Exception ex)
+        //{
+        //  MessageBox.Show(ex.Message);
+        //}
+        //gp2 = null;
 
-        sExpression = "( Raster('" + sAmenazasParciales + "') + Raster('" + sNVITempReclass + "'))";
-        sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
-        mapAlgebra.expression = sExpression;
-        mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
+        //sExpression = "( Raster('" + sAmenazasParciales + "') + Raster('" + sNVITempReclass + "'))";
+        //sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
+        //mapAlgebra.expression = sExpression;
+        //mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
 
-        try
-        {
-          gp.Execute(mapAlgebra, null);
-          sAmenazasParciales = sAmenazaFinalBrutaNVI;
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
+        //try
+        //{
+        //  gp.Execute(mapAlgebra, null);
+        //  sAmenazasParciales = sAmenazaFinalBrutaNVI;
+        //}
+        //catch (Exception ex)
+        //{
+        //  MessageBox.Show(ex.Message);
+        //}
       }
 
 
