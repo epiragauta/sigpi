@@ -242,7 +242,7 @@ namespace SIGPI_10
 
       PrepararInformacion preparar = new PrepararInformacion();
       string mesTemperatura, mesPrecipitacion;
-      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "temperatura.xls";
+      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "temperatura_.xls";
       Microsoft.Office.Interop.Excel.Application _excelApp = null;
       Workbook workBook = null;
       Worksheet sheet = null;
@@ -258,7 +258,7 @@ namespace SIGPI_10
                             Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                             Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
-        sheet = (Worksheet)workBook.Sheets["Hoja1"];
+        sheet = (Worksheet)workBook.Sheets["max"];
         mesTemperatura = "";
         try
         {
@@ -294,7 +294,7 @@ namespace SIGPI_10
           return;
         }
 
-        List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, "A", sColumnaDia, -20, 50);
+        List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, "D", sColumnaDia, -20, 50);
         pStepPro.Step();
         dFechaIncorporacionActual = dtPickerFechaAIncorporar.Value; //_sigpi.FechaIncorporacion.AddDays(1);
         //MessageBox.Show("lecturas a incorporar Temp. : " + listaTemperatura.Count.ToString());
@@ -316,7 +316,7 @@ namespace SIGPI_10
 
       }
       
-      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "precipitacion.xls";
+      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "precipitacion_.xls";
 
 
       try
@@ -326,7 +326,7 @@ namespace SIGPI_10
                             Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                             Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
-        sheet = (Worksheet)workBook.Sheets["Hoja1"];
+        sheet = (Worksheet)workBook.Sheets["precipitacion"];
 
         try
         {
@@ -349,7 +349,7 @@ namespace SIGPI_10
           return;
         }
 
-        List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, "A", sColumnaDia, 0, 500);
+        List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, "D", sColumnaDia, 0, 500);
         //MessageBox.Show("lecturas a incorporar Prec. : " + listaPrecipitacion.Count.ToString());
         bool bIncorporarPrecip = preparar.IncorporarLecturas(_sigpiDao, "LECTUS_PRECI", dFechaIncorporacionActual, listaPrecipitacion);
 
