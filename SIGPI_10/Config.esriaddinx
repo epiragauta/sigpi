@@ -1,0 +1,27 @@
+﻿<ESRI.Configuration xmlns="http://schemas.esri.com/Desktop/AddIns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>SIGPI_10</Name>
+  <AddInID>{15d94a74-6fc0-4b3c-bbcb-97123019b66e}</AddInID>
+  <Description>Sistema de Información Geográfica para el pronóstico de Incendios de la Cobertura Vegetal</Description>
+  <Version>1.0</Version>
+  <Image>Images\SIGPI_10.png</Image>
+  <Author>Edwin Piragauta</Author>
+  <Company>IDEAM</Company>
+  <Date>30/08/2013</Date>
+  <Targets>
+    <Target name="Desktop" version="10.1" />
+  </Targets>
+  <AddIn language="CLR4.0" library="SIGPI_10.dll" namespace="SIGPI_10">
+    <ArcMap>
+      <Commands>
+        <Button id="IDEAM_SIGPI_10_SIGPI" class="SIGPI" message="Sistema de Información Geográfica para el pronóstico de Incendios de la Cobertura Vegetal" caption="SIGPI" tip="IDEAM" category="IDEAM_SIGPI" image="Images\SIGPI.png" />
+      </Commands>
+      <Toolbars>
+        <Toolbar id="IDEAM_SIGPI_10_SIGPI_1" caption="SIGPI" showInitially="true">
+          <Items>
+            <Item refID="IDEAM_SIGPI_10_SIGPI" />
+          </Items>
+        </Toolbar>
+      </Toolbars>
+    </ArcMap>
+  </AddIn>
+</ESRI.Configuration>
