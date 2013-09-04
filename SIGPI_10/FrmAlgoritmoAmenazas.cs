@@ -23,6 +23,7 @@ using ESRI.ArcGIS.Catalog;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.DataManagementTools;
 using ESRI.ArcGIS.Geoprocessor;
+using System.Data.OleDb;
 
 namespace SIGPI_10
 {
@@ -214,10 +215,19 @@ namespace SIGPI_10
       sigpiDao.UltimaFechaIncorporacion(sigpi);
       sigpi.Parametros = parametros;
 
-      string sSQL = "UPDATE FECHAS_PROCESO SET FEC_PROCE = #" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#";
+      OleDbCommand command = sigpiDao.LocalDBConnection.CreateCommand();
+      OleDbParameter param = command.CreateParameter();
+      OleDbParameter param1 = command.CreateParameter();
+      param.ParameterName = "fecProce";
+      param.Value = sigpi.FechaProcesamiento;
+      
+      command.CommandText = "UPDATE FECHAS_PROCESO SET FEC_PROCE = @fecProce";
+      command.Parameters.Add(param);
+
+      string sSQL = ""; // "UPDATE FECHAS_PROCESO SET FEC_PROCE = #" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#";
       try
       {
-        sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+        sigpiDao.EjecutarSentenciaSinQuery(command);
       }
       catch (Exception ex)
       {
@@ -320,24 +330,44 @@ namespace SIGPI_10
       IEnvelope pEnv = pFCMask.Extent;
 
       string sNombreTabla = "TMPPR_";
+
+      DateTime fechaProcesamiento = sigpi.FechaProcesamiento;
+      fechaProcesamiento = fechaProcesamiento.Date;
+
+
       for (int i = 0; i < 10; i++)
       {
+        
         try
         {
           sigpiDao.EjecutarSentenciaSinQuery("DROP TABLE " + sNombreTabla + i.ToString());
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
+          System.Console.WriteLine(ex.Message);
         }
         // "IIf([LECTUS_PRECI]![LECTURA]<=2,5,IIf([LECTUS_PRECI]![LECTURA]<=8 And [LECTUS_PRECI]![LECTURA]>2,4,IIf([LECTUS_PRECI]![LECTURA]<=14 And [LECTUS_PRECI]![LECTURA]>8,3,IIf([LECTUS_PRECI]![LECTURA]<=24 And [LECTUS_PRECI]![LECTURA]>14,2,IIf([LECTUS_PRECI]![LECTURA]>24,1,0))))) AS LECTURAS " +
-        sSQL = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
+        //sSQL = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
+        //              "INTO " + sNombreTabla + i.ToString() + " " +
+        //              "FROM LECTUS_PRECI " +
+        //              "WHERE (((FECHA)=#" + sigpi.FechaProcesamiento.AddDays(-i).ToString("MM/dd/yyyy") + "#))";
+        command = sigpiDao.LocalDBConnection.CreateCommand();
+        command.CommandText = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
                       "INTO " + sNombreTabla + i.ToString() + " " +
                       "FROM LECTUS_PRECI " +
-                      "WHERE (((FECHA)=#" + sigpi.FechaProcesamiento.AddDays(-i).ToString("MM/dd/yyyy") + "#))";
+                      "WHERE (((FECHA) >=@fecha) and ((FECHA) <@fecha1))";
+        param = command.CreateParameter();
+        param.ParameterName = "fecha";
+        param.Value = sigpi.FechaProcesamiento.AddDays(-i);
+        command.Parameters.Add(param);
+        param1 = command.CreateParameter();
+        param1.ParameterName = "fecha1";
+        param1.Value = sigpi.FechaProcesamiento.AddDays(-i+1);
+        command.Parameters.Add(param1);
+
         try
         {
-          sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+          sigpiDao.EjecutarSentenciaSinQuery(command);
         }
         catch (Exception ex)
         {
@@ -358,15 +388,32 @@ namespace SIGPI_10
       //"IIf(Avg(LECTUS_TEMPE.LECTURA)<=6,1,IIf(Avg(LECTUS_TEMPE.LECTURA) <=12 And Avg(LECTUS_TEMPE.LECTURA)>6,2," + 
       //"IIf(Avg(LECTUS_TEMPE.LECTURA)<=18 And Avg(LECTUS_TEMPE.LECTURA)>12,3,IIf(Avg(LECTUS_TEMPE.LECTURA)<=24 And " +
       //"Avg(LECTUS_TEMPE.LECTURA)>12,4,IIf(Avg(LECTUS_TEMPE.LECTURA)>24,5,0))))) AS LECTURAS, " +
-      sSQL = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
+      
+      //sSQL = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
+      //        "INTO TEMPERATURA_PROMEDIO " +
+      //        "FROM LECTUS_TEMPE " +
+      //        "WHERE (((FECHA)>=#" + sigpi.FechaProcesamiento.AddDays(-10).ToString("MM/dd/yyyy") + "# " +
+      //        "And (FECHA)<=#" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#)) " +
+      //        "GROUP BY CODIGO, X, Y";
+      command = sigpiDao.LocalDBConnection.CreateCommand();
+      command.CommandText = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
               "INTO TEMPERATURA_PROMEDIO " +
               "FROM LECTUS_TEMPE " +
-              "WHERE (((FECHA)>=#" + sigpi.FechaProcesamiento.AddDays(-10).ToString("MM/dd/yyyy") + "# " +
-              "And (FECHA)<=#" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#)) " +
+              "WHERE (((FECHA)>= @fecha1 " +
+              "And (FECHA)<= @fecha)) " +
               "GROUP BY CODIGO, X, Y";
+      param = command.CreateParameter();
+      param.ParameterName = "fecha";
+      param.Value = sigpi.FechaProcesamiento;
+      param1 = command.CreateParameter();
+      param1.ParameterName = "fecha1";
+      param1.Value = sigpi.FechaProcesamiento.AddDays(-10);
+      command.Parameters.Add(param1);
+      command.Parameters.Add(param);
+      
       try
       {
-        sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+        sigpiDao.EjecutarSentenciaSinQuery(command);
       }
       catch (Exception ex)
       {
@@ -433,6 +480,7 @@ namespace SIGPI_10
       gp.SetEnvironmentValue("Mask", parametros.RutaGBD + "\\" + parametros.Mascara);
       gp.SetEnvironmentValue("Extent", pEnv.XMin.ToString() + " " + pEnv.YMin.ToString() + " " +
                                        pEnv.XMax.ToString() + " " + pEnv.YMax.ToString());
+
       ESRI.ArcGIS.SpatialAnalystTools.Idw idw = new Idw();
       idw.z_field = sFieldLecturas;
       idw.cell_size = dCellSize;
@@ -505,7 +553,7 @@ namespace SIGPI_10
         }
 
         dPeso = iPesos[i] / iTotalPesos;
-        sExpression += "( Raster('" + sOutGrid + "') * " + dPeso.ToString() + ")";
+        sExpression += "( Raster(r'" + sOutGrid + "') * " + dPeso.ToString().Replace(",",".") + ")";
         if (i < 9)
         {
           sExpression += " + ";
@@ -598,9 +646,9 @@ namespace SIGPI_10
       {
         gp.Execute(idw, null);
       }
-      catch (Exception)
+      catch (Exception ex)
       {
-
+        Console.WriteLine(ex.Message);
       }
 
 
@@ -711,9 +759,9 @@ namespace SIGPI_10
       }
 
 
-      sExpression = "( Raster('" + sAmenazaXPrecipReclass + "') * " + dPesoPrecipitacion.ToString() + ") + " +
-                    "( Raster('" + sAmenazaXTempReclass + "') * " + dPesoTemperatura.ToString() + ") + " +
-                    "( Raster('" + sAmenazasParciales + "') * " + dPesoAmenazasParciales.ToString() + ")";
+      sExpression = "( Raster(r'" + sAmenazaXPrecipReclass + "') * " + dPesoPrecipitacion.ToString().Replace(",", ".") + ") + " +
+                    "( Raster(r'" + sAmenazaXTempReclass + "') * " + dPesoTemperatura.ToString().Replace(",", ".") + ") + " +
+                    "( Raster(r'" + sAmenazasParciales + "') * " + dPesoAmenazasParciales.ToString().Replace(",", ".") + ")";
 
       //mapAlgebra.expression_string = sExpression;
       //mapAlgebra.out_raster = sAmenazaBruta;
