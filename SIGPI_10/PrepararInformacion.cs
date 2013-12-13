@@ -261,6 +261,18 @@ namespace SIGPI_10
       int iNumRegistros;
       double dLectura;
       double dX, dY;
+
+      OleDbDataReader reader = sigpiDao.EjecutarSentenciaLectura("SELECT codigo, longitud, latitud FROM ESTACIONES");
+      Dictionary<Int32, EstacionIdeam> dictEstaciones = new Dictionary<Int32, EstacionIdeam>();
+
+      while (reader.Read())
+      {
+        EstacionIdeam estacion = new EstacionIdeam(reader.GetInt32(0), reader.GetDouble(1), reader.GetDouble(2));
+        if (!dictEstaciones.ContainsKey(estacion.Codigo)) { 
+          dictEstaciones.Add(estacion.Codigo, estacion);
+        }
+      }
+
       while (iLimite < 100)
       {
         objCodigo = sheet.get_Range(ColumnaCodigo + i.ToString(), ColumnaCodigo + i.ToString()).Value2;
@@ -279,15 +291,30 @@ namespace SIGPI_10
               lectura = new Lectura();
               lectura.Codigo = System.Convert.ToInt32(objCodigo);
               lectura.Valor = dLectura;
-              try
+              if (!ColumnaCodigo.Equals("A"))
               {
-                lectura.X = Convert.ToDouble(sheet.get_Range("A" + i.ToString(), "A" + i.ToString()).Value2);
-                lectura.Y = Convert.ToDouble(sheet.get_Range("B" + i.ToString(), "B" + i.ToString()).Value2);
+                try
+                {
+                  lectura.X = Convert.ToDouble(sheet.get_Range("A" + i.ToString(), "A" + i.ToString()).Value2);
+                  lectura.Y = Convert.ToDouble(sheet.get_Range("B" + i.ToString(), "B" + i.ToString()).Value2);
+                }
+                catch (Exception)
+                {
+                }
               }
-              catch (Exception)
+              else
               {
+                if (dictEstaciones.ContainsKey(lectura.Codigo))
+                {
+                  lectura.X = dictEstaciones[lectura.Codigo].Longitud;
+                  lectura.Y = dictEstaciones[lectura.Codigo].Latitud;
+                }
               }
-              lista.Add(lectura);
+              if (lectura.X != 0)
+              {
+                lista.Add(lectura);
+              }
+              
             }
           }
           //}

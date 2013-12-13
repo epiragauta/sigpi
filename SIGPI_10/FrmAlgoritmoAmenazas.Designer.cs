@@ -101,6 +101,7 @@
       this.txtRutaNVI.Size = new System.Drawing.Size(345, 20);
       this.txtRutaNVI.TabIndex = 19;
       this.txtRutaNVI.Text = "C:\\SIGPI\\datos\\IMÁGENES\\01 NOVIEMBRE\\total24h.tif";
+      this.txtRutaNVI.Visible = false;
       // 
       // txtRutaPrecipitacion
       // 
@@ -126,6 +127,7 @@
       this.btnBuscarNVI.Size = new System.Drawing.Size(32, 23);
       this.btnBuscarNVI.TabIndex = 21;
       this.btnBuscarNVI.UseVisualStyleBackColor = true;
+      this.btnBuscarNVI.Visible = false;
       this.btnBuscarNVI.Click += new System.EventHandler(this.btnBuscarNVI_Click_1);
       // 
       // label5
@@ -136,6 +138,7 @@
       this.label5.Size = new System.Drawing.Size(61, 13);
       this.label5.TabIndex = 17;
       this.label5.Text = "Indice Veg:";
+      this.label5.Visible = false;
       // 
       // btnDelTemp
       // 
@@ -165,6 +168,7 @@
       this.chkUtilizarImagenes.TabIndex = 14;
       this.chkUtilizarImagenes.Text = "Utilizar Imagenes de Satelite ";
       this.chkUtilizarImagenes.UseVisualStyleBackColor = true;
+      this.chkUtilizarImagenes.Visible = false;
       // 
       // btnEjecutar
       // 
@@ -256,8 +260,9 @@
       this.Controls.Add(this.label4);
       this.Controls.Add(this.richTextBox1);
       this.Controls.Add(this.label1);
+      this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
       this.Name = "FrmAlgoritmoAmenazas";
-      this.Text = "FrmAlgoritmoAmenazas";
+      this.Text = "Algoritmo Amenazas";
       this.panelOpImagenes.ResumeLayout(false);
       this.panelOpImagenes.PerformLayout();
       this.ResumeLayout(false);

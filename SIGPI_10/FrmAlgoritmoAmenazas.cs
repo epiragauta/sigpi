@@ -24,6 +24,7 @@ using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.DataManagementTools;
 using ESRI.ArcGIS.Geoprocessor;
 using System.Data.OleDb;
+using System.Diagnostics;
 
 namespace SIGPI_10
 {
@@ -68,6 +69,47 @@ namespace SIGPI_10
       //  }
       //}
 
+      if (chkUtilizarImagenes.Checked)
+      {
+        SIGPIParametros parametros = new SIGPIParametros();
+        String tempDir = parametros.TempDir;
+        String currentPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+        currentPath = currentPath.Replace("file:\\", "");
+        //String currentPath =  //Path.GetDirectoryName(Application.ExecutablePath);
+        String dateDir = tempDir + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+        String MODIS_DIR = "modis";
+        String SIGPI_PROCESS_BAT = "sigpi_process.bat";
+
+        if (System.IO.Directory.Exists(dateDir))
+        {
+          try
+          {
+            System.IO.Directory.Delete(dateDir);
+          }
+          catch (Exception ex)
+          {
+            Console.WriteLine(ex.Message);
+          }
+        }
+
+        System.IO.Directory.CreateDirectory(dateDir);
+        String[] files = System.IO.Directory.GetFiles(currentPath + "\\" + MODIS_DIR);
+        foreach (String f in files)
+        {
+
+          System.IO.File.Copy(f, dateDir + "\\" + f.Substring(f.LastIndexOf("\\") + 1, f.Length - (f.LastIndexOf("\\") + 1)), true);
+        }
+        Process proc = new Process();
+        proc.StartInfo.FileName = dateDir + "\\" + SIGPI_PROCESS_BAT;
+        proc.StartInfo.Arguments = "";
+        proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+        proc.StartInfo.ErrorDialog = false;
+        proc.StartInfo.WorkingDirectory = dateDir;
+        proc.Start();
+        proc.WaitForExit();
+        if (proc.ExitCode != 0)
+          Console.WriteLine("Error ejecutando...");
+      }
       IGeoProcessor gp = new GeoProcessor();
 
 
@@ -189,7 +231,8 @@ namespace SIGPI_10
                                 string sTablaTempPromedio, string sConsultaTablaTempPromedio, bool bUsarSatelite,
                                 bool bMostrarIntermedios, String[] sRastersPrecipitacion)
     {
-      string sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+      String sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+      String tempDir = "";
 
       sPath = sPath.Replace("file:\\", "");
       SIGPIParametros parametros = new SIGPIParametros();
@@ -204,7 +247,7 @@ namespace SIGPI_10
       }
       catch (Exception ex)
       {
-        MessageBox.Show(ex.Message, "SIGPI 2010");
+        MessageBox.Show(ex.Message, "SIGPI 2013");
         return;
       }
 
@@ -254,6 +297,12 @@ namespace SIGPI_10
       string sFormatTmp = "gdb_" + sigpi.FechaProcesamiento.ToString("yyyyMMdd") + "_" +
                           DateTime.Now.ToString("HHmmss");
 
+      tempDir = sigpi.Parametros.TempDir;
+
+      if (tempDir == null || tempDir.Trim().Equals(""))
+      {
+        tempDir = System.IO.Path.GetTempPath();
+      }
       string sRutaFileGDB = System.IO.Path.GetTempPath() + sFormatTmp + ".gdb";
 
       if (System.IO.Directory.Exists(sRutaFileGDB))

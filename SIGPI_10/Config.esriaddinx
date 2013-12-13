@@ -6,7 +6,7 @@
   <Image>Images\SIGPI_10.png</Image>
   <Author>Edwin Piragauta</Author>
   <Company>IDEAM</Company>
-  <Date>30/08/2013</Date>
+  <Date>11/12/2013</Date>
   <Targets>
     <Target name="Desktop" version="10.1" />
   </Targets>
@@ -14,11 +14,15 @@
     <ArcMap>
       <Commands>
         <Button id="IDEAM_SIGPI_10_SIGPI" class="SIGPI" message="Sistema de Información Geográfica para el pronóstico de Incendios de la Cobertura Vegetal" caption="SIGPI" tip="IDEAM" category="IDEAM_SIGPI" image="Images\SIGPI.png" />
+        <Button id="IDEAM_SIGPI_10_SigpiModis" class="SigpiModis" message="Validar Actualizacion NDVI MODIS" caption="Validar Actualizacion NDVI MODIS" tip="Validar Actualizacion NDVI MODIS" category="SIGPI" image="Images\SigpiModis.png" />
+        <Button id="IDEAM_SIGPI_10_SigpiHelp" class="SigpiHelp" message="Ayuda SIGPI" caption="Ayuda SIGPI" tip="Ayuda SIGPI" category="Ayuda SIGPI" image="Images\SigpiHelp.png" />
       </Commands>
       <Toolbars>
         <Toolbar id="IDEAM_SIGPI_10_SIGPI_1" caption="SIGPI" showInitially="true">
           <Items>
             <Item refID="IDEAM_SIGPI_10_SIGPI" />
+            <Item refID="IDEAM_SIGPI_10_SigpiModis" />
+            <Item refID="IDEAM_SIGPI_10_SigpiHelp" />
           </Items>
         </Toolbar>
       </Toolbars>
