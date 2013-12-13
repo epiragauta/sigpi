@@ -30,6 +30,8 @@
     {
       this.tabControl1 = new System.Windows.Forms.TabControl();
       this.tabParametrosIniciales = new System.Windows.Forms.TabPage();
+      this.txtDirTemp = new System.Windows.Forms.TextBox();
+      this.label16 = new System.Windows.Forms.Label();
       this.txtPorcentajeLecturas = new System.Windows.Forms.TextBox();
       this.label11 = new System.Windows.Forms.Label();
       this.txtDirCapasTMMM = new System.Windows.Forms.TextBox();
@@ -113,11 +115,13 @@
       this.tabControl1.Location = new System.Drawing.Point(8, 8);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(418, 423);
+      this.tabControl1.Size = new System.Drawing.Size(418, 449);
       this.tabControl1.TabIndex = 25;
       // 
       // tabParametrosIniciales
       // 
+      this.tabParametrosIniciales.Controls.Add(this.txtDirTemp);
+      this.tabParametrosIniciales.Controls.Add(this.label16);
       this.tabParametrosIniciales.Controls.Add(this.txtPorcentajeLecturas);
       this.tabParametrosIniciales.Controls.Add(this.label11);
       this.tabParametrosIniciales.Controls.Add(this.txtDirCapasTMMM);
@@ -143,10 +147,26 @@
       this.tabParametrosIniciales.Location = new System.Drawing.Point(4, 22);
       this.tabParametrosIniciales.Name = "tabParametrosIniciales";
       this.tabParametrosIniciales.Padding = new System.Windows.Forms.Padding(3);
-      this.tabParametrosIniciales.Size = new System.Drawing.Size(410, 397);
+      this.tabParametrosIniciales.Size = new System.Drawing.Size(410, 423);
       this.tabParametrosIniciales.TabIndex = 0;
       this.tabParametrosIniciales.Text = "Parametros Iniciales";
       this.tabParametrosIniciales.UseVisualStyleBackColor = true;
+      // 
+      // txtDirTemp
+      // 
+      this.txtDirTemp.Location = new System.Drawing.Point(139, 234);
+      this.txtDirTemp.Name = "txtDirTemp";
+      this.txtDirTemp.Size = new System.Drawing.Size(244, 20);
+      this.txtDirTemp.TabIndex = 48;
+      // 
+      // label16
+      // 
+      this.label16.AutoSize = true;
+      this.label16.Location = new System.Drawing.Point(10, 237);
+      this.label16.Name = "label16";
+      this.label16.Size = new System.Drawing.Size(102, 13);
+      this.label16.TabIndex = 49;
+      this.label16.Text = "Directorio Temporal:";
       // 
       // txtPorcentajeLecturas
       // 
@@ -224,7 +244,7 @@
       this.groupBox1.Controls.Add(this.label4);
       this.groupBox1.Controls.Add(this.txtGDBServidor);
       this.groupBox1.Controls.Add(this.label3);
-      this.groupBox1.Location = new System.Drawing.Point(9, 235);
+      this.groupBox1.Location = new System.Drawing.Point(7, 262);
       this.groupBox1.Name = "groupBox1";
       this.groupBox1.Size = new System.Drawing.Size(398, 152);
       this.groupBox1.TabIndex = 41;
@@ -319,6 +339,7 @@
       this.button1.Size = new System.Drawing.Size(22, 23);
       this.button1.TabIndex = 30;
       this.button1.UseVisualStyleBackColor = true;
+      this.button1.Click += new System.EventHandler(this.button1_Click_1);
       // 
       // txtBDLocal
       // 
@@ -343,6 +364,7 @@
       this.btnDirBase.Size = new System.Drawing.Size(22, 23);
       this.btnDirBase.TabIndex = 27;
       this.btnDirBase.UseVisualStyleBackColor = true;
+      this.btnDirBase.Click += new System.EventHandler(this.btnDirBase_Click_1);
       // 
       // txtDirBase
       // 
@@ -367,6 +389,7 @@
       this.btnFolderOpen.Size = new System.Drawing.Size(22, 23);
       this.btnFolderOpen.TabIndex = 34;
       this.btnFolderOpen.UseVisualStyleBackColor = true;
+      this.btnFolderOpen.Click += new System.EventHandler(this.btnFolderOpen_Click);
       // 
       // txtDirectorioResultados
       // 
@@ -445,7 +468,7 @@
       this.tabParamNuevoAlgoritmo.Location = new System.Drawing.Point(4, 22);
       this.tabParamNuevoAlgoritmo.Name = "tabParamNuevoAlgoritmo";
       this.tabParamNuevoAlgoritmo.Padding = new System.Windows.Forms.Padding(3);
-      this.tabParamNuevoAlgoritmo.Size = new System.Drawing.Size(410, 397);
+      this.tabParamNuevoAlgoritmo.Size = new System.Drawing.Size(410, 423);
       this.tabParamNuevoAlgoritmo.TabIndex = 1;
       this.tabParamNuevoAlgoritmo.Text = "Parametros Algoritmo Amenazas";
       this.tabParamNuevoAlgoritmo.UseVisualStyleBackColor = true;
@@ -707,22 +730,24 @@
       // btnAceptar
       // 
       this.btnAceptar.DialogResult = System.Windows.Forms.DialogResult.OK;
-      this.btnAceptar.Location = new System.Drawing.Point(120, 437);
+      this.btnAceptar.Location = new System.Drawing.Point(120, 460);
       this.btnAceptar.Name = "btnAceptar";
       this.btnAceptar.Size = new System.Drawing.Size(75, 23);
       this.btnAceptar.TabIndex = 45;
       this.btnAceptar.Text = "&Aceptar";
       this.btnAceptar.UseVisualStyleBackColor = true;
+      this.btnAceptar.Click += new System.EventHandler(this.btnAceptar_Click_1);
       // 
       // btnCancelar
       // 
       this.btnCancelar.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.btnCancelar.Location = new System.Drawing.Point(219, 437);
+      this.btnCancelar.Location = new System.Drawing.Point(214, 460);
       this.btnCancelar.Name = "btnCancelar";
       this.btnCancelar.Size = new System.Drawing.Size(75, 23);
       this.btnCancelar.TabIndex = 46;
       this.btnCancelar.Text = "&Cancelar";
       this.btnCancelar.UseVisualStyleBackColor = true;
+      this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click_1);
       // 
       // openDlg
       // 
@@ -732,12 +757,13 @@
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(430, 469);
+      this.ClientSize = new System.Drawing.Size(430, 490);
       this.Controls.Add(this.btnAceptar);
       this.Controls.Add(this.btnCancelar);
       this.Controls.Add(this.tabControl1);
       this.Name = "FrmPropiedadesSIGPI";
-      this.Text = "FrmPropiedadesSIGPI";
+      this.Text = "Propiedades SIGPI";
+      this.Load += new System.EventHandler(this.FrmPropiedadesSIGPI_Load);
       this.tabControl1.ResumeLayout(false);
       this.tabParametrosIniciales.ResumeLayout(false);
       this.tabParametrosIniciales.PerformLayout();
@@ -823,5 +849,7 @@
     private System.Windows.Forms.Button btnCancelar;
     private System.Windows.Forms.FolderBrowserDialog folderDlg;
     private System.Windows.Forms.OpenFileDialog openDlg;
+    private System.Windows.Forms.TextBox txtDirTemp;
+    private System.Windows.Forms.Label label16;
   }
 }

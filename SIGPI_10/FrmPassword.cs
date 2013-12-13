@@ -21,7 +21,7 @@ namespace SIGPI_10
 
     private void btnAceptar_Click(object sender, EventArgs e)
     {
-      if (txUsuario.Text.ToUpper() == "SIGPI" & txtClave.Text.ToUpper() == "SIGPI2010")
+      if (txUsuario.Text.ToUpper().Equals("SIGPI") & txtClave.Text.ToUpper().Equals("SIGPI2013"))
       {
         //MessageBox.Show("Clave OK");
         this.DialogResult = DialogResult.OK;

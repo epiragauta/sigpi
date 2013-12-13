@@ -102,7 +102,8 @@
       this.Controls.Add(this.label2);
       this.Controls.Add(this.label1);
       this.Name = "FrmPassword";
-      this.Text = "FrmPassword";
+      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+      this.Text = "Autenticacion";
       this.ResumeLayout(false);
       this.PerformLayout();
 

@@ -79,13 +79,23 @@ namespace SIGPI_10
         i++;
       }
 
-      //CreatePersonalGDB
-      string sOutFC2 = RasterAPuntos(Sigpi.Parametros.RutaSIGPI + "\\" + Sigpi.Parametros.Resultado + "\\" + sNombreFileGDB + "\\" + sNombreCapa,
+      String sOutFC2;
+      try
+      {
+        sOutFC2 = RasterAPuntos(Sigpi.Parametros.RutaSIGPI + "\\" + Sigpi.Parametros.Resultado + "\\" + sNombreFileGDB + "\\" + sNombreCapa,
                       System.IO.Path.GetTempPath() + sOutFC, gp);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.Message, "SIGPI", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        this.Cursor = Cursors.Default;
+        return;
+      }
+      
 
       IWorkspaceFactory pWF = new ShapefileWorkspaceFactoryClass();
       IFeatureWorkspace pFWorkspace = (IFeatureWorkspace)pWF.OpenFromFile(System.IO.Path.GetTempPath(), 0);
-      string sFC = sOutFC2.Replace(System.IO.Path.GetTempPath(), "");
+      string sFC = sOutFC2.Substring(sOutFC2.LastIndexOf("\\"),sOutFC2.Length-sOutFC2.LastIndexOf("\\")); // sOutFC2.Replace(System.IO.Path.GetTempPath(), "");
       IFeatureClass pFC = pFWorkspace.OpenFeatureClass(sFC);
 
       string sFecha = fechaExportacion.ToString("dd DE MMMM DE yyyy").ToUpper();
@@ -124,6 +134,7 @@ namespace SIGPI_10
         progressBar1.Step = 100;
         progressBar1.Visible = true;
         System.Windows.Forms.Application.DoEvents();
+        String currentValue = "";
         while (pFeature1 != null)
         {
           range = sheet.get_Range("A" + k.ToString(), "E" + k.ToString());
@@ -133,8 +144,14 @@ namespace SIGPI_10
           objValues[0, 3] = pFeature1.get_Value(lFieldDepto);
           objValues[0, 4] = pFeature1.get_Value(lFieldCobertura);
           objValues[0, 5] = pFeature1.get_Value(lFieldParque);
-          range.set_Value(Type.Missing, objValues);
-          k++;
+          if (!currentValue.Equals(objValues[0, 0] + "-" + objValues[0, 1] + "-" + objValues[0, 2] + "-" + objValues[0, 3] + "-" + objValues[0, 4] + "-" + objValues[0, 5]))
+          {
+            range.set_Value(Type.Missing, objValues);
+            k++;
+          }
+          currentValue = objValues[0, 0] + "-" + objValues[0, 1] + "-" + objValues[0, 2] + "-" + objValues[0, 3] + "-" + objValues[0, 4] + "-" + objValues[0, 5];
+          
+          
           if (k == 65537)
             break;
           if (k % 100 == 0)
@@ -239,6 +256,34 @@ namespace SIGPI_10
             pMap.MoveLayer(pRLayer, pMap.LayerCount - 1);
           }
 
+          if (!(pMxDoc.ActiveView is IPageLayout))
+          {
+            pMxDoc.ActiveView = (IActiveView)pMxDoc.PageLayout;
+          }
+
+          IPageLayout pageLayout = pMxDoc.PageLayout;
+          IGraphicsContainer pGraphicsContainer = (IGraphicsContainer)pageLayout;
+          pGraphicsContainer.Reset();
+          IElement pElement;
+          pElement = pGraphicsContainer.Next();
+          while (pElement != null)
+          {
+            if (pElement is ITextElement)
+            {
+              ITextElement pTxtElement = (ITextElement)pElement;
+              IElementProperties3 pElemProperties = (IElementProperties3)pTxtElement;
+              if (pElemProperties.Name.Equals("lblProbabilidad"))
+              {
+                pTxtElement.Text = "PROBABILIDAD PARA EL " + fechaExportacion.ToLongDateString();
+              }
+              if (pElemProperties.Name.Equals("lblFechaGeneracion"))
+              {
+                pTxtElement.Text = "Fecha Generación: " + DateTime.Now.ToLongTimeString();
+              }
+            }
+            pElement = pGraphicsContainer.Next();
+          }
+
           pMxDoc.UpdateContents();
           pMxDoc.ActiveView.Refresh();
         }
@@ -248,6 +293,9 @@ namespace SIGPI_10
         }
       }
       this.Cursor = Cursors.Default;
+
+      
+
       //string sTipo = "";
       //string sRuta = "";
       //if (radioBtnProbabilidad.Checked)
@@ -412,23 +460,31 @@ namespace SIGPI_10
 
     }
 
-    private string RasterAPuntos(string sRasterLayer, string sOutputFC, Geoprocessor gp)
+    private String RasterAPuntos(string sRasterLayer, string sOutputFC, Geoprocessor gp)
     {
       string sCapaMpios_parques_cobertura = "mpios_parques_cobertura";
       string sFCCruce = _sigpi.Parametros.RutaGBD + "\\" + sCapaMpios_parques_cobertura;
-      RasterToPoint raster2Pnt = new RasterToPoint(sRasterLayer, sOutputFC);
-      raster2Pnt.raster_field = "VALUE";
+      try
+      {
+        RasterToPoint raster2Pnt = new RasterToPoint(sRasterLayer, sOutputFC);
+        raster2Pnt.raster_field = "VALUE";
 
-      gp.Execute(raster2Pnt, null);
+        gp.Execute(raster2Pnt, null);
 
-      Intersect intersect = new Intersect();
-      intersect.in_features = sOutputFC + " ; " + sFCCruce;
-      intersect.out_feature_class = sOutputFC.Replace(".shp", "_intersect.shp");
-      intersect.join_attributes = "NO_FID";
-      intersect.output_type = "POINT";
+        Intersect intersect = new Intersect();
+        intersect.in_features = sOutputFC + " ; " + sFCCruce;
+        intersect.out_feature_class = sOutputFC.Replace(".shp", "_intersect.shp");
+        intersect.join_attributes = "NO_FID";
+        intersect.output_type = "POINT";
 
-      gp.Execute(intersect, null);
-      return intersect.out_feature_class.ToString();
+        gp.Execute(intersect, null);
+        return intersect.out_feature_class.ToString();
+      }
+      catch (Exception ex)
+      {
+        throw new Exception("Verifique que exista información para el día seleccionado");
+      }
+            
     }
 
     

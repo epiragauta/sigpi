@@ -15,5 +15,15 @@ namespace SIGPI_10
     {
       InitializeComponent();
     }
+
+    private void btnGenerarGrids_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void btnIncorporarLecturas_Click(object sender, EventArgs e)
+    {
+
+    }
   }
 }

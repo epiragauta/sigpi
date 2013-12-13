@@ -101,6 +101,7 @@
       this.btnIncorporarLecturas.TabIndex = 14;
       this.btnIncorporarLecturas.Text = "Algoritmo Convencional";
       this.btnIncorporarLecturas.UseVisualStyleBackColor = true;
+      this.btnIncorporarLecturas.Click += new System.EventHandler(this.btnIncorporarLecturas_Click);
       // 
       // btnGenerarGrids
       // 
@@ -110,6 +111,7 @@
       this.btnGenerarGrids.TabIndex = 13;
       this.btnGenerarGrids.Text = "Algoritmo de Amenazas";
       this.btnGenerarGrids.UseVisualStyleBackColor = true;
+      this.btnGenerarGrids.Click += new System.EventHandler(this.btnGenerarGrids_Click);
       // 
       // lblTitulo
       // 

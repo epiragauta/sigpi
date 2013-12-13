@@ -1,0 +1,31 @@
+
+#The "INPUT_FILENAMES" field would be commented. If you want to load multiple input files please uncomment the "INPUT_FILENAMES" field and comment the"INPUT_FILENAME" field. 
+#Also the "ORIG_SPECTRAL_SUBSET" field needs to be uncommented and changed to "SPECTRAL_SUBSET". The initial "SPECTRAL_SUBSET" field should be deleted.
+
+
+INPUT_FILENAME = PATH_INPUT_MOSAIC_HDF\tmpMosaic.hdf
+
+SPECTRAL_SUBSET = ( 1 1 1 1 1 1 1 1 1 1 1 1 )
+#ORIG_SPECTRAL_SUBSET = ( 1 1 1 1 1 1 1 1 1 1 1 1 )
+
+SPATIAL_SUBSET_TYPE = INPUT_LAT_LONG
+
+SPATIAL_SUBSET_UL_CORNER = ( 19.999999998 -85.134221789 )
+SPATIAL_SUBSET_LR_CORNER = ( -9.999999999 -60.925596708 )
+
+OUTPUT_FILENAME = PATH_OUTPUT_MOSAIC_HDF\tmpMosaic.tif
+
+RESAMPLING_TYPE = NONE
+
+OUTPUT_PROJECTION_TYPE = GEO
+
+OUTPUT_PROJECTION_PARAMETERS = ( 
+ 0.0 0.0 0.0
+ 0.0 0.0 0.0
+ 0.0 0.0 0.0
+ 0.0 0.0 0.0
+ 0.0 0.0 0.0 )
+
+DATUM = WGS84
+
+OUTPUT_PIXEL_SIZE = 500
