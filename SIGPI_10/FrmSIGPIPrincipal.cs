@@ -45,8 +45,8 @@ namespace SIGPI_10
       string sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
       sPath = sPath + "\\" + "parameters";
       logger.Info("FrmSIGPIPrincipal  :: sPath :: {0}",sPath);
-      System.Console.WriteLine(sPath);
-      MessageBox.Show(sPath,"sPath");
+      //System.Console.WriteLine(sPath);
+      //MessageBox.Show(sPath,"sPath");
       
       sPath = sPath.Replace("file:\\", "");
       //MessageBox.Show("parametros: " + sPath + "\\parametros.xml");
@@ -61,7 +61,7 @@ namespace SIGPI_10
       }
       catch (Exception ex)
       {
-        MessageBox.Show(ex.Message, "SIGPI 2010");
+        MessageBox.Show(ex.Message, "SIGPI");
         return;
       }
 
@@ -193,7 +193,7 @@ namespace SIGPI_10
       try
       {
         XmlSerializer serializer = new XmlSerializer(typeof(SIGPIParametros));
-        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parametros.xml");
+        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parameters\\parametros.xml");
         parametros = (SIGPIParametros)serializer.Deserialize(r);
         r.Close();
         serializer = null;
@@ -291,12 +291,7 @@ namespace SIGPI_10
 
       //  MessageBox.Show("FinSS");
     }
-
-    private void richTextBox1_TextChanged(object sender, EventArgs e)
-    {
-
-    }
-
+    
     private void btnModelo2_Click(object sender, EventArgs e)
     {
       FrmAlgoritmoAmenazas frmAmenazas = new FrmAlgoritmoAmenazas(m_pApp, sigpi.FechaProcesamiento);
@@ -413,7 +408,7 @@ namespace SIGPI_10
       MessageBox.Show("Algoritmo completo ejecutado");
     }
 
-    private void button1_Click_1(object sender, EventArgs e)
+    private void btnAbout_Click(object sender, EventArgs e)
     {
       FrmAboutBox about = new FrmAboutBox();
       about.ShowDialog();

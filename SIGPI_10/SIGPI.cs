@@ -9,16 +9,16 @@ namespace SIGPI_10
   {
     public SIGPI()
     {
-      FrmSIGPIPrincipal frmMain = new FrmSIGPIPrincipal(ArcMap.Application);
-      frmMain.Show();
+      
     }
 
     protected override void OnClick()
     {
-      //
-      //  TODO: Sample code showing how to access button host
-      //
+
       ArcMap.Application.CurrentTool = null;
+      FrmSIGPIPrincipal frmMain = new FrmSIGPIPrincipal(ArcMap.Application);
+      IntPtr pIntPtr = new IntPtr(ArcMap.Application.hWnd);
+      frmMain.Show((System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(pIntPtr));
     }
     protected override void OnUpdate()
     {

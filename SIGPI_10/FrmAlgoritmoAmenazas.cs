@@ -23,6 +23,8 @@ using ESRI.ArcGIS.Catalog;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.DataManagementTools;
 using ESRI.ArcGIS.Geoprocessor;
+using System.Data.OleDb;
+using System.Diagnostics;
 
 namespace SIGPI_10
 {
@@ -67,6 +69,47 @@ namespace SIGPI_10
       //  }
       //}
 
+      if (chkUtilizarImagenes.Checked)
+      {
+        SIGPIParametros parametros = new SIGPIParametros();
+        String tempDir = parametros.TempDir;
+        String currentPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+        currentPath = currentPath.Replace("file:\\", "");
+        //String currentPath =  //Path.GetDirectoryName(Application.ExecutablePath);
+        String dateDir = tempDir + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+        String MODIS_DIR = "modis";
+        String SIGPI_PROCESS_BAT = "sigpi_process.bat";
+
+        if (System.IO.Directory.Exists(dateDir))
+        {
+          try
+          {
+            System.IO.Directory.Delete(dateDir);
+          }
+          catch (Exception ex)
+          {
+            Console.WriteLine(ex.Message);
+          }
+        }
+
+        System.IO.Directory.CreateDirectory(dateDir);
+        String[] files = System.IO.Directory.GetFiles(currentPath + "\\" + MODIS_DIR);
+        foreach (String f in files)
+        {
+
+          System.IO.File.Copy(f, dateDir + "\\" + f.Substring(f.LastIndexOf("\\") + 1, f.Length - (f.LastIndexOf("\\") + 1)), true);
+        }
+        Process proc = new Process();
+        proc.StartInfo.FileName = dateDir + "\\" + SIGPI_PROCESS_BAT;
+        proc.StartInfo.Arguments = "";
+        proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+        proc.StartInfo.ErrorDialog = false;
+        proc.StartInfo.WorkingDirectory = dateDir;
+        proc.Start();
+        proc.WaitForExit();
+        if (proc.ExitCode != 0)
+          Console.WriteLine("Error ejecutando...");
+      }
       IGeoProcessor gp = new GeoProcessor();
 
 
@@ -77,19 +120,20 @@ namespace SIGPI_10
         MessageBox.Show("Busque las capa de precipitacion solicitadas");
         return;
       }
-      string sRasterPrecipitacionSatelite = txtRutaPrecipitacion.Text;
-      string sFecha = txtRutaPrecipitacion.Text.Substring(txtRutaPrecipitacion.Text.IndexOf('_'), 20).Replace("_satelite_", "");
-      String[] sFecha2 = sFecha.Split('_');
-      DateTime dFechaPrecipitacionSatelite = new DateTime(Convert.ToInt32(sFecha2[0]), Convert.ToInt32(sFecha2[1]), Convert.ToInt32(sFecha2[2]));
+      
+      //string sRasterPrecipitacionSatelite = txtRutaPrecipitacion.Text;
+      //string sFecha = txtRutaPrecipitacion.Text.Substring(txtRutaPrecipitacion.Text.IndexOf('_'), 20).Replace("_satelite_", "");
+      //String[] sFecha2 = sFecha.Split('_');
+      //DateTime dFechaPrecipitacionSatelite = new DateTime(Convert.ToInt32(sFecha2[0]), Convert.ToInt32(sFecha2[1]), Convert.ToInt32(sFecha2[2]));
       String[] sRastersPrecipitacionX10 = new String[10];
-      DateTime dTemp;
-      String sTemp;
-      for (int i = 0; i < 10; i++)
-      {
-        dTemp = dFechaPrecipitacionSatelite.AddDays(-i);
-        sTemp = dTemp.ToString("yyyy_MM_dd"); //  +"_" + dTemp.ToString("MM") + "_" + dTemp.ToString("dd");
-        sRastersPrecipitacionX10[i] = sRasterPrecipitacionSatelite.Replace(sFecha, sTemp);
-      }
+      //DateTime dTemp;
+      //String sTemp;
+      //for (int i = 0; i < 10; i++)
+      //{
+      //  dTemp = dFechaPrecipitacionSatelite.AddDays(-i);
+      //  sTemp = dTemp.ToString("yyyy_MM_dd"); //  +"_" + dTemp.ToString("MM") + "_" + dTemp.ToString("dd");
+      //  sRastersPrecipitacionX10[i] = sRasterPrecipitacionSatelite.Replace(sFecha, sTemp);
+      //}
 
       GenerarModelo("PRECIPITACION_PROMEDIO", "PRECIPITACION_PROMEDIO.SUM_PREC >= 0", "",
                       "TEMPERATURA_PROMEDIO", "TEMPERATURA_PROMEDIO.TEMP_PROM >= 0",
@@ -187,14 +231,15 @@ namespace SIGPI_10
                                 string sTablaTempPromedio, string sConsultaTablaTempPromedio, bool bUsarSatelite,
                                 bool bMostrarIntermedios, String[] sRastersPrecipitacion)
     {
-      string sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+      String sPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+      String tempDir = "";
 
       sPath = sPath.Replace("file:\\", "");
       SIGPIParametros parametros = new SIGPIParametros();
       try
       {
         XmlSerializer serializer = new XmlSerializer(typeof(SIGPIParametros));
-        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parametros.xml");
+        System.IO.StreamReader r = new System.IO.StreamReader(sPath + "\\parameters\\parametros.xml");
         parametros = (SIGPIParametros)serializer.Deserialize(r);
         r.Close();
         serializer = null;
@@ -202,7 +247,7 @@ namespace SIGPI_10
       }
       catch (Exception ex)
       {
-        MessageBox.Show(ex.Message, "SIGPI 2010");
+        MessageBox.Show(ex.Message, "SIGPI 2013");
         return;
       }
 
@@ -213,10 +258,19 @@ namespace SIGPI_10
       sigpiDao.UltimaFechaIncorporacion(sigpi);
       sigpi.Parametros = parametros;
 
-      string sSQL = "UPDATE FECHAS_PROCESO SET FEC_PROCE = #" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#";
+      OleDbCommand command = sigpiDao.LocalDBConnection.CreateCommand();
+      OleDbParameter param = command.CreateParameter();
+      OleDbParameter param1 = command.CreateParameter();
+      param.ParameterName = "fecProce";
+      param.Value = sigpi.FechaProcesamiento;
+      
+      command.CommandText = "UPDATE FECHAS_PROCESO SET FEC_PROCE = @fecProce";
+      command.Parameters.Add(param);
+
+      string sSQL = ""; // "UPDATE FECHAS_PROCESO SET FEC_PROCE = #" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#";
       try
       {
-        sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+        sigpiDao.EjecutarSentenciaSinQuery(command);
       }
       catch (Exception ex)
       {
@@ -243,6 +297,12 @@ namespace SIGPI_10
       string sFormatTmp = "gdb_" + sigpi.FechaProcesamiento.ToString("yyyyMMdd") + "_" +
                           DateTime.Now.ToString("HHmmss");
 
+      tempDir = sigpi.Parametros.TempDir;
+
+      if (tempDir == null || tempDir.Trim().Equals(""))
+      {
+        tempDir = System.IO.Path.GetTempPath();
+      }
       string sRutaFileGDB = System.IO.Path.GetTempPath() + sFormatTmp + ".gdb";
 
       if (System.IO.Directory.Exists(sRutaFileGDB))
@@ -319,24 +379,44 @@ namespace SIGPI_10
       IEnvelope pEnv = pFCMask.Extent;
 
       string sNombreTabla = "TMPPR_";
+
+      DateTime fechaProcesamiento = sigpi.FechaProcesamiento;
+      fechaProcesamiento = fechaProcesamiento.Date;
+
+
       for (int i = 0; i < 10; i++)
       {
+        
         try
         {
           sigpiDao.EjecutarSentenciaSinQuery("DROP TABLE " + sNombreTabla + i.ToString());
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
+          System.Console.WriteLine(ex.Message);
         }
         // "IIf([LECTUS_PRECI]![LECTURA]<=2,5,IIf([LECTUS_PRECI]![LECTURA]<=8 And [LECTUS_PRECI]![LECTURA]>2,4,IIf([LECTUS_PRECI]![LECTURA]<=14 And [LECTUS_PRECI]![LECTURA]>8,3,IIf([LECTUS_PRECI]![LECTURA]<=24 And [LECTUS_PRECI]![LECTURA]>14,2,IIf([LECTUS_PRECI]![LECTURA]>24,1,0))))) AS LECTURAS " +
-        sSQL = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
+        //sSQL = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
+        //              "INTO " + sNombreTabla + i.ToString() + " " +
+        //              "FROM LECTUS_PRECI " +
+        //              "WHERE (((FECHA)=#" + sigpi.FechaProcesamiento.AddDays(-i).ToString("MM/dd/yyyy") + "#))";
+        command = sigpiDao.LocalDBConnection.CreateCommand();
+        command.CommandText = "SELECT CODIGO, FECHA, X, Y, LECTURA AS RASTERVALU " +
                       "INTO " + sNombreTabla + i.ToString() + " " +
                       "FROM LECTUS_PRECI " +
-                      "WHERE (((FECHA)=#" + sigpi.FechaProcesamiento.AddDays(-i).ToString("MM/dd/yyyy") + "#))";
+                      "WHERE (((FECHA) >=@fecha) and ((FECHA) <@fecha1))";
+        param = command.CreateParameter();
+        param.ParameterName = "fecha";
+        param.Value = sigpi.FechaProcesamiento.AddDays(-i);
+        command.Parameters.Add(param);
+        param1 = command.CreateParameter();
+        param1.ParameterName = "fecha1";
+        param1.Value = sigpi.FechaProcesamiento.AddDays(-i+1);
+        command.Parameters.Add(param1);
+
         try
         {
-          sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+          sigpiDao.EjecutarSentenciaSinQuery(command);
         }
         catch (Exception ex)
         {
@@ -357,15 +437,32 @@ namespace SIGPI_10
       //"IIf(Avg(LECTUS_TEMPE.LECTURA)<=6,1,IIf(Avg(LECTUS_TEMPE.LECTURA) <=12 And Avg(LECTUS_TEMPE.LECTURA)>6,2," + 
       //"IIf(Avg(LECTUS_TEMPE.LECTURA)<=18 And Avg(LECTUS_TEMPE.LECTURA)>12,3,IIf(Avg(LECTUS_TEMPE.LECTURA)<=24 And " +
       //"Avg(LECTUS_TEMPE.LECTURA)>12,4,IIf(Avg(LECTUS_TEMPE.LECTURA)>24,5,0))))) AS LECTURAS, " +
-      sSQL = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
+      
+      //sSQL = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
+      //        "INTO TEMPERATURA_PROMEDIO " +
+      //        "FROM LECTUS_TEMPE " +
+      //        "WHERE (((FECHA)>=#" + sigpi.FechaProcesamiento.AddDays(-10).ToString("MM/dd/yyyy") + "# " +
+      //        "And (FECHA)<=#" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#)) " +
+      //        "GROUP BY CODIGO, X, Y";
+      command = sigpiDao.LocalDBConnection.CreateCommand();
+      command.CommandText = "SELECT CODIGO, Max(LECTUS_TEMPE.FECHA) AS FECHA, 10 AS Num_Dias, X, Y, AVG(LECTURA) AS RASTERVALU " +
               "INTO TEMPERATURA_PROMEDIO " +
               "FROM LECTUS_TEMPE " +
-              "WHERE (((FECHA)>=#" + sigpi.FechaProcesamiento.AddDays(-10).ToString("MM/dd/yyyy") + "# " +
-              "And (FECHA)<=#" + sigpi.FechaProcesamiento.ToString("MM/dd/yyyy") + "#)) " +
+              "WHERE (((FECHA)>= @fecha1 " +
+              "And (FECHA)<= @fecha)) " +
               "GROUP BY CODIGO, X, Y";
+      param = command.CreateParameter();
+      param.ParameterName = "fecha";
+      param.Value = sigpi.FechaProcesamiento;
+      param1 = command.CreateParameter();
+      param1.ParameterName = "fecha1";
+      param1.Value = sigpi.FechaProcesamiento.AddDays(-10);
+      command.Parameters.Add(param1);
+      command.Parameters.Add(param);
+      
       try
       {
-        sigpiDao.EjecutarSentenciaSinQuery(sSQL);
+        sigpiDao.EjecutarSentenciaSinQuery(command);
       }
       catch (Exception ex)
       {
@@ -391,7 +488,7 @@ namespace SIGPI_10
       string sAmenazaXTemperaturaCombinada = sRutaFileGDB + "\\" + "amenaza_x_temperatura_combinada";
       string sEstVirtualesPrecipitacion = sRutaFileGDB + "\\" + "estaciones_virtuales_precipitacion";
       string sAmenazaXPrecipitacionCombinada = sRutaFileGDB + "\\" + "amenaza_x_precipitacion_combinada";
-      string sAmenazaFinalBrutaNVI = sRutaFileGDB + "\\" + "amenaza_incendio_bruta_nvi";
+      string sAmenazaFinalBrutaNVI = sRutaFileGDB + "\\" + "amenaza_incend_raw_nvi";
       string sNVITempReclass = sRutaFileGDB + "\\" + "nvi_reclass_temp";
       string sFromField = "FROM_";
       string sToField = "TO_";
@@ -401,6 +498,7 @@ namespace SIGPI_10
       string sTipoEstadistico = parametros.TipoEstadistico; //"MAXIMUM";      
       string sAmenazaXPrecipReclass = sAmenazaXPrecipitacion + "_reclass";
       string sAmenazaXTempReclass = sAmenazaXTemperatura + "_reclass";
+      string nvi = parametros.RutaSIGPI + "NVI" + "\\" + "tmpMosaic.500m_16_days_NDVI_GEO.tif";
 
       double dPesoPrecipitacion = parametros.PesoPrecipitacion;  //0.29;
       double dPesoTemperatura = parametros.PesoTemperatura;  //0.24;
@@ -411,7 +509,7 @@ namespace SIGPI_10
       IDatasetName pDSName2 = new FeatureClassNameClass();
       IExportOperation pExportOp = new ExportOperationClass();
 
-      string sEstacionesVirtuales = @"C:\SIGPI\datos\ESTACIONES VIRTUALES\" + "EstacionesVirtuales.shp";
+      string sEstacionesVirtuales =  sRutaFileGDB + "\\" + "EstacionesVirtuales.shp";
       ExtractValuesToPoints extractValPoint = new ExtractValuesToPoints();
       extractValPoint.in_point_features = sEstacionesVirtuales;
       extractValPoint.interpolate_values = "NONE";
@@ -432,6 +530,7 @@ namespace SIGPI_10
       gp.SetEnvironmentValue("Mask", parametros.RutaGBD + "\\" + parametros.Mascara);
       gp.SetEnvironmentValue("Extent", pEnv.XMin.ToString() + " " + pEnv.YMin.ToString() + " " +
                                        pEnv.XMax.ToString() + " " + pEnv.YMax.ToString());
+
       ESRI.ArcGIS.SpatialAnalystTools.Idw idw = new Idw();
       idw.z_field = sFieldLecturas;
       idw.cell_size = dCellSize;
@@ -456,34 +555,36 @@ namespace SIGPI_10
 
         if (bUsarSatelite)
         {
-          Geoprocessor gp1 = new Geoprocessor();
-          extractValPoint.in_raster = sRastersPrecipitacion[i];  // txtRutaPrecipitacion.Text;
-          extractValPoint.out_point_features = sEstVirtualesPrecipitacion + i.ToString();
+          //Geoprocessor gp1 = new Geoprocessor();
+          //extractValPoint.in_raster = sRastersPrecipitacion[i];  // txtRutaPrecipitacion.Text;
+          //extractValPoint.out_point_features = sEstVirtualesPrecipitacion + i.ToString();
 
-          try
-          {
-            gp1.Execute(extractValPoint, null);
-          }
-          catch (Exception ex)
-          {
-            MessageBox.Show(ex.Message);
-          }
+          //try
+          //{
+          //  gp1.Execute(extractValPoint, null);
+          //}
+          //catch (Exception ex)
+          //{
+          //  MessageBox.Show(ex.Message);
+          //}
 
-          Merge merge = new Merge();
-          string sInputMerge = sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString();
-          merge.inputs = sInputMerge;
-          //"[" + sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString() + "]" ;
-          merge.output = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
-          try
-          {
-            gp.Execute(merge, null);
-          }
-          catch (Exception ex)
-          {
-            MessageBox.Show(ex.Message);
-          }
+          //Merge merge = new Merge();
+          //string sInputMerge = sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString();
+          //merge.inputs = sInputMerge;
+          ////"[" + sRutaFileGDB + "\\" + sNombreTabla + i.ToString() + ";" + sEstVirtualesPrecipitacion + i.ToString() + "]" ;
+          //merge.output = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+          //try
+          //{
+          //  gp.Execute(merge, null);
+          //}
+          //catch (Exception ex)
+          //{
+          //  MessageBox.Show(ex.Message);
+          //}
 
-          idw.in_point_features = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+          //idw.in_point_features = sRutaFileGDB + "\\" + "est_precip_temporal" + i.ToString();
+
+          idw.in_point_features = sRutaFileGDB + "\\" + sNombreTabla + i.ToString();
         }
         else
         {
@@ -502,9 +603,11 @@ namespace SIGPI_10
         }
 
         dPeso = iPesos[i] / iTotalPesos;
-        sExpression += "( Raster('" + sOutGrid + "') * " + dPeso.ToString() + ")";
+        sExpression += "( Raster(r'" + sOutGrid + "') * " + dPeso.ToString().Replace(",",".") + ")";
         if (i < 9)
+        {
           sExpression += " + ";
+        }
 
       }
 
@@ -593,9 +696,9 @@ namespace SIGPI_10
       {
         gp.Execute(idw, null);
       }
-      catch (Exception)
+      catch (Exception ex)
       {
-
+        Console.WriteLine(ex.Message);
       }
 
 
@@ -669,51 +772,15 @@ namespace SIGPI_10
         pProDia.HideDialog();
         return;
       }
-
-      if (txtRutaNVI.Text.Trim() != "")
-      {
-        Geoprocessor gp2 = new Geoprocessor();
-        Con pCon = new Con();
-        pCon.in_conditional_raster = txtRutaNVI.Text;
-        pCon.in_true_raster_or_constant = 0;
-        pCon.in_false_raster_or_constant = -1;
-        pCon.where_clause = "VALUE <= 0";
-        pCon.out_raster = sNVITempReclass;
-        try
-        {
-          gp2.Execute(pCon, null);
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-        gp2 = null;
-
-        sExpression = "( Raster('" + sAmenazasParciales + "') + Raster('" + sNVITempReclass + "'))";
-        sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
-        mapAlgebra.expression = sExpression;
-        mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
-
-        try
-        {
-          gp.Execute(mapAlgebra, null);
-          sAmenazasParciales = sAmenazaFinalBrutaNVI;
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(ex.Message);
-        }
-      }
-
-
-      sExpression = "( Raster('" + sAmenazaXPrecipReclass + "') * " + dPesoPrecipitacion.ToString() + ") + " +
-                    "( Raster('" + sAmenazaXTempReclass + "') * " + dPesoTemperatura.ToString() + ") + " +
-                    "( Raster('" + sAmenazasParciales + "') * " + dPesoAmenazasParciales.ToString() + ")";
+      
+      sExpression = "( Raster(r'" + sAmenazaXPrecipReclass + "') * " + dPesoPrecipitacion.ToString().Replace(",", ".") + ") + " +
+                    "( Raster(r'" + sAmenazaXTempReclass + "') * " + dPesoTemperatura.ToString().Replace(",", ".") + ") + " +
+                    "( Raster(r'" + sAmenazasParciales + "') * " + dPesoAmenazasParciales.ToString().Replace(",", ".") + ")";
 
       //mapAlgebra.expression_string = sExpression;
       //mapAlgebra.out_raster = sAmenazaBruta;
 
-      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
+      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");      
       mapAlgebra.expression = sExpression;
       mapAlgebra.output_raster = sAmenazaBruta;
 
@@ -727,9 +794,28 @@ namespace SIGPI_10
         MessageBox.Show(ex.Message);
       }
 
+      //if (txtRutaNVI.Text.Trim() != "")
+      //{
+      Geoprocessor gp2 = new Geoprocessor();
+      mapAlgebra = new RasterCalculator();
+      sExpression = "Con (Raster(r'" + nvi + "') < 0.75, Raster(r'" + sAmenazaBruta + "'), Raster(r'" + sAmenazaBruta + "') -1)";
+      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
+      mapAlgebra.expression = sExpression;
+      mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
+           
+      try
+      {
+        gp2.Execute(mapAlgebra, null);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.Message);
+      }
+      
+      //}
 
 
-      rbt.in_raster = sAmenazaBruta;
+      rbt.in_raster = sAmenazaFinalBrutaNVI;  // sAmenazaBruta;
       rbt.in_remap_table = sTablaReclassIncendios; // parametros.RutaGBD + "\\" + sTablaReclassIncendios;
       rbt.from_value_field = sFromField;
       rbt.to_value_field = sToField;

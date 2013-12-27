@@ -79,6 +79,7 @@
       this.btnAbout.TabIndex = 18;
       this.btnAbout.Text = "&Acerca de...";
       this.btnAbout.UseVisualStyleBackColor = true;
+      this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
       // 
       // btnCerrar
       // 
@@ -146,6 +147,8 @@
       // 
       // pictureBox1
       // 
+      this.pictureBox1.Image = global::SIGPI_10.Properties.Resources.ideam2;
+      this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
       this.pictureBox1.Location = new System.Drawing.Point(12, 86);
       this.pictureBox1.Name = "pictureBox1";
       this.pictureBox1.Size = new System.Drawing.Size(88, 110);
@@ -168,9 +171,9 @@
       this.lblTitulo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
       this.lblTitulo.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.lblTitulo.ForeColor = System.Drawing.Color.Black;
-      this.lblTitulo.Location = new System.Drawing.Point(103, 4);
+      this.lblTitulo.Location = new System.Drawing.Point(65, 4);
       this.lblTitulo.Name = "lblTitulo";
-      this.lblTitulo.Size = new System.Drawing.Size(419, 50);
+      this.lblTitulo.Size = new System.Drawing.Size(457, 50);
       this.lblTitulo.TabIndex = 23;
       this.lblTitulo.Text = "SISTEMA DE INFORMACION GEOGRAFICA \r\nPARA LA PREVENCION DE INCENDIOS SIGPI";
       this.lblTitulo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -193,8 +196,9 @@
       this.Controls.Add(this.btnGenerarGrids);
       this.Controls.Add(this.txtFechaUltimoModelo);
       this.Controls.Add(this.label1);
+      this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
       this.Name = "FrmSIGPIPrincipal";
-      this.Text = "FrmSIGPIPrincipal";
+      this.Text = "SIGPI";
       this.Load += new System.EventHandler(this.FrmSIGPIPrincipal_Load);
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
       this.ResumeLayout(false);

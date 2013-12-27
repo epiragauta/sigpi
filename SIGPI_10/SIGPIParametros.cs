@@ -18,6 +18,7 @@ namespace SIGPI_10
     string sTipoEstadistico;
     double[] dPesos;
     private string rutaMXD;
+    private string tempDir;
 
     /// <summary>
     /// Capa de Susceptibilidad Activa
@@ -35,6 +36,15 @@ namespace SIGPI_10
     {
       get { return ruta_sigpi; }
       set { ruta_sigpi = value; }
+    }
+
+    /// <summary>
+    /// Directorio Base del SIGPI
+    /// </summary>
+    public string TempDir
+    {
+      get { return tempDir; }
+      set { tempDir = value; }
     }
 
     /// <summary>
@@ -501,6 +511,8 @@ namespace SIGPI_10
           gdbUsuario = parameters.ReadString();
         if (parameters.NodeType == XmlNodeType.Element && parameters.Name == "CLAVE")
           gdbClave = parameters.ReadString();
+        if (parameters.NodeType == XmlNodeType.Element && parameters.Name == "TempDir")
+          tempDir = parameters.ReadString();
       }
 
       //ruta_sigpi = @"G:\SIGPI\";

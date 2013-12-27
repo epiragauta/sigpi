@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SIGPIParametros xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SusceptibilidadActiva />
-  <RutaSIGPI>c:\SIGPI\</RutaSIGPI>
+  <RutaSIGPI>E:\SIGPI\</RutaSIGPI>
   <Lecturas>LECTURAS</Lecturas>
   <Imagenes>JPG</Imagenes>
   <Temporal>TEMPO</Temporal>
   <TMMMM>TMMMM</TMMMM>
   <Resultado>RESULTADO</Resultado>
   <Raster>RASTER</Raster>
-  <RutaBD>C:\SIGPI\BASE_ACCESS\sigpi_bd.mdb</RutaBD>
-  <RutaGBD>C:\SIGPI\datos\GeoDB_SIGPI.mdb</RutaGBD>
+  <RutaBD>E:\SIGPI\BASE_ACCESS\sigpi_bd.mdb</RutaBD>
+  <RutaGBD>E:\SIGPI\datos\GeoDB_SIGPI.mdb</RutaGBD>
   <Susceptibilidad>Susceptibilidad</Susceptibilidad>
   <SusceptibilidadConNino>Susceptibilidad_con_nino</SusceptibilidadConNino>
   <Grids>Mapas_Grid</Grids>
@@ -22,7 +22,7 @@
   <BaseDeDatos>IDEAM</BaseDeDatos>
   <Usuario>epiragauta</Usuario>
   <Clave>CONSULTA</Clave>
-  <RutaMXD>d:\SIGPI\MDX\SIGPI.MXD</RutaMXD>
+  <RutaMXD>E:\SIGPI\MDX\SIGPI_10.MXD</RutaMXD>
   <GDBServidor>SIGPI</GDBServidor>
   <GDBInstancia>5151</GDBInstancia>
   <GDBDataBase>IDEAM</GDBDataBase>
@@ -31,14 +31,15 @@
   <PesoPrecipitacion>0.29</PesoPrecipitacion>
   <PesoTemperatura>0.24</PesoTemperatura>
   <PesoAmenazasParciales>0.47</PesoAmenazasParciales>
-  <TablaReclasificacionTemperatura>C:\SIGPI\datos\GeoDB_SIGPI_2.mdb\tbl_reclass_temperatura</TablaReclasificacionTemperatura>
-  <TablaReclasificacionPrecipitacion>C:\SIGPI\datos\GeoDB_SIGPI_2.mdb\tbl_reclass_precipitacion</TablaReclasificacionPrecipitacion>
-  <TablaReclasificacionIncendios>C:\SIGPI\datos\GeoDB_SIGPI_2.mdb\tbl_reclass_amenaza_incendios</TablaReclasificacionIncendios>
+  <TablaReclasificacionTemperatura>E:\SIGPI\datos\GeoDB_SIGPI.mdb\tbl_reclass_temperatura</TablaReclasificacionTemperatura>
+  <TablaReclasificacionPrecipitacion>E:\SIGPI\datos\GeoDB_SIGPI.mdb\tbl_reclass_precipitacion</TablaReclasificacionPrecipitacion>
+  <TablaReclasificacionIncendios>E:\SIGPI\datos\GeoDB_SIGPI.mdb\tbl_reclass_amenaza_incendios</TablaReclasificacionIncendios>
   <TipoEstadistico>MAXIMUM</TipoEstadistico>
+  <TempDir>c:\temp</TempDir>
   <Pesos>
     <double>30</double>
-    <double>20</double>
-    <double>15</double>
+    <double>18</double>
+    <double>12</double>
     <double>9</double>
     <double>8</double>
     <double>7</double>

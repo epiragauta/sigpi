@@ -49,9 +49,9 @@
       this.lblCapaAsociada.AutoSize = true;
       this.lblCapaAsociada.Location = new System.Drawing.Point(2, 176);
       this.lblCapaAsociada.Name = "lblCapaAsociada";
-      this.lblCapaAsociada.Size = new System.Drawing.Size(35, 13);
+      this.lblCapaAsociada.Size = new System.Drawing.Size(16, 13);
       this.lblCapaAsociada.TabIndex = 13;
-      this.lblCapaAsociada.Text = "label1";
+      this.lblCapaAsociada.Text = "...";
       // 
       // monthCalendar1
       // 
@@ -63,7 +63,7 @@
       // 
       // btnCerrar
       // 
-      this.btnCerrar.Location = new System.Drawing.Point(215, 219);
+      this.btnCerrar.Location = new System.Drawing.Point(232, 219);
       this.btnCerrar.Name = "btnCerrar";
       this.btnCerrar.Size = new System.Drawing.Size(75, 23);
       this.btnCerrar.TabIndex = 11;
@@ -73,8 +73,7 @@
       // 
       // btnExp2Map
       // 
-      this.btnExp2Map.Enabled = false;
-      this.btnExp2Map.Location = new System.Drawing.Point(121, 219);
+      this.btnExp2Map.Location = new System.Drawing.Point(134, 219);
       this.btnExp2Map.Name = "btnExp2Map";
       this.btnExp2Map.Size = new System.Drawing.Size(75, 23);
       this.btnExp2Map.TabIndex = 10;
@@ -84,7 +83,6 @@
       // 
       // btnExportarAExcel
       // 
-      this.btnExportarAExcel.Enabled = false;
       this.btnExportarAExcel.Location = new System.Drawing.Point(40, 219);
       this.btnExportarAExcel.Name = "btnExportarAExcel";
       this.btnExportarAExcel.Size = new System.Drawing.Size(75, 23);

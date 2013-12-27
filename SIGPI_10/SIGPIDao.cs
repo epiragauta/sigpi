@@ -57,6 +57,21 @@ namespace SIGPI_10
       //EjecutarSentenciaSinQuery = true;
     }
 
+    public void EjecutarSentenciaSinQuery(OleDbCommand command)
+    {
+      
+      try
+      {
+        command.ExecuteNonQuery();
+      }
+      catch (Exception e)
+      {
+
+        throw new Exception(e.Message);
+      }
+      //EjecutarSentenciaSinQuery = true;
+    }
+
     public OleDbDataReader EjecutarSentenciaLectura(string sSQL)
     {
       OleDbCommand command = new OleDbCommand(sSQL, pConn);

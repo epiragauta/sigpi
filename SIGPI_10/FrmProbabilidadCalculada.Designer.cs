@@ -176,7 +176,7 @@
       this.Controls.Add(this.groupBox1);
       this.Controls.Add(this.label1);
       this.Name = "FrmProbabilidadCalculada";
-      this.Text = "FrmProbabilidadCalculada";
+      this.Text = "Probabilidad Calculada";
       this.groupBox2.ResumeLayout(false);
       this.groupBox2.PerformLayout();
       this.groupBox1.ResumeLayout(false);

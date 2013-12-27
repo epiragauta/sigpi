@@ -245,7 +245,8 @@
       this.Controls.Add(this.picLogoIdeam);
       this.Controls.Add(this.label1);
       this.Name = "FrmPreparacionInformacion";
-      this.Text = "FrmPreparacionInformacion";
+      this.Text = "Preparar Informacion";
+      this.Load += new System.EventHandler(this.FrmPreparacionInformacion_Load);
       this.groupBox2.ResumeLayout(false);
       this.groupBox2.PerformLayout();
       this.statusStrip1.ResumeLayout(false);

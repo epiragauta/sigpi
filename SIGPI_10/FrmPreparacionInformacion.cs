@@ -10,6 +10,7 @@ using System.Xml;
 using ESRI.ArcGIS.Framework;
 using ESRI.ArcGIS.esriSystem;
 using Microsoft.Office.Interop.Excel;
+using System.Data.OleDb;
 
 namespace SIGPI_10
 {
@@ -18,6 +19,31 @@ namespace SIGPI_10
   /// </summary>
   public partial class FrmPreparacionInformacion : Form
   {
+
+    private static String LECTURAS_TEMPERATURA = "temperatura.xls";
+    private static String LECTURAS_PRECIPITACION = "precipitacion.xls";
+    private static String DIR_PARAMETROS = "parameters";
+    private static String ARCHIVO_PARAMETROS = "parameteros.xml";
+    private static String ARCHIVO_NO_ENCONTRADO = "No se encuentra en archivo";
+    private static String SIGPI_TITULO = "SIGPI";
+    private static String SIGPI_CELDA_MES_TEMPERATURA = "D1";
+    private static String SIGPI_CELDA_MES_PRECIPITACION = "A1";
+    private static String SIGPI_COLUMNA_ESTACIONES = "D";
+    private static String SIGPI_COLUMNA_CODIGO_TEMPERATURA = "A";
+    private static String SIGPI_COLUMNA_CODIGO_PRECIPITACION = "A";
+    private static String SIGPI_TABLA_LECTURAS_TEMPERATURA = "LECTUS_TEMPE";
+    private static String SIGPI_TABLA_LECTURAS_PRECIPITACION = "LECTUS_PRECI";
+    private static Double SIGPI_TEMPERATURA_MIN_VAL = -20;
+    private static Double SIGPI_TEMPERATURA_MAX_VAL = 50;
+    private static Double SIGPI_PRECIPITACION_MIN_VAL = 0;
+    private static Double SIGPI_PRECIPITACION_MAX_VAL = 500;
+    private static Int32 SIGPI_COLUMNA_INICIO_DIA_TEMPERATURA = 5;
+    private static String SIGPI_FILA_DIA_TEMPERATURA = "2";
+    private static Int32 SIGPI_COLUMNA_INICIO_DIA_PRECIPITACION = 6;
+    private static String SIGPI_FILA_DIA_PRECIPITACION = "2";
+
+
+
     private SIGPIParametros _parametros;
     private SIGPICls _sigpi;
     private SIGPIDao _sigpiDao;
@@ -58,16 +84,24 @@ namespace SIGPI_10
 
       XmlDocument xmlDoc = new XmlDocument();
       XmlNodeList xmlNodeList;
-      xmlDoc.Load(sPath + "\\" + "parametros.xml");
+      xmlDoc.Load(sPath + "\\" + DIR_PARAMETROS + "\\" + ARCHIVO_PARAMETROS);
       xmlNodeList = xmlDoc.SelectNodes("/SIGPI/RUTA_LECTURAS");
       string sRutaLectura = xmlNodeList.Item(0).InnerText;
       string sRutaDB = xmlDoc.SelectNodes("/SIGPI/RUTA_BD").Item(0).InnerText;
 
-      if (PrepararInformacion.ExistSIGPIFiles(sRutaLectura + "temperatura.xls") == false)
+      if (!PrepararInformacion.ExistSIGPIFiles(sRutaLectura + LECTURAS_TEMPERATURA))
+      {
+        MessageBox.Show(String.Format(ARCHIVO_NO_ENCONTRADO + ": {0}", sRutaLectura +  LECTURAS_TEMPERATURA), SIGPI_TITULO);
         return;
+      }
 
-      if (PrepararInformacion.ExistSIGPIFiles(sRutaLectura + "precipitacion.xls") == false)
+
+      if (!PrepararInformacion.ExistSIGPIFiles(sRutaLectura + LECTURAS_PRECIPITACION))
+      {
+        MessageBox.Show(String.Format(ARCHIVO_NO_ENCONTRADO + ": {0}", sRutaLectura + LECTURAS_PRECIPITACION), SIGPI_TITULO);
         return;
+      }
+        
 
       //MessageBox.Show(sRutaDB);
     }
@@ -96,10 +130,10 @@ namespace SIGPI_10
 
       PrepararInformacion preparar = new PrepararInformacion();
       string mesTemperatura, mesPrecipitacion;
-      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "temperaturamax.xls";
+      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + LECTURAS_TEMPERATURA;
       if (!System.IO.File.Exists(sRuta))
       {
-        MessageBox.Show("El Archivo '" + sRuta + "' Verifique la ruta");
+        MessageBox.Show("No existe el Archivo '" + sRuta + "' Verifique la ruta");
         return;
       }
       Microsoft.Office.Interop.Excel.Application _excelApp = new Microsoft.Office.Interop.Excel.Application();
@@ -123,7 +157,7 @@ namespace SIGPI_10
       mesTemperatura = "";
       try
       {
-        mesTemperatura = preparar.VerificarFechasLecturas(sheet, "E2");
+        mesTemperatura = preparar.VerificarFechasLecturas(sheet, SIGPI_CELDA_MES_TEMPERATURA);
       }
       catch (Exception ex)
       {
@@ -145,7 +179,7 @@ namespace SIGPI_10
         }
       }
 
-      int iTotalEstaciones = preparar.TotalEstaciones(sheet, "D");
+      int iTotalEstaciones = preparar.TotalEstaciones(sheet, SIGPI_COLUMNA_ESTACIONES);
       string sColumnaDia = preparar.ColumnaLecturaDia(sheet, 8, iDay.ToString(), "3");
       if (sColumnaDia == "-99")
       {
@@ -155,18 +189,19 @@ namespace SIGPI_10
         return;
       }
 
-      List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, "D", sColumnaDia, -20, 50);
+      List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, SIGPI_COLUMNA_CODIGO_TEMPERATURA, sColumnaDia, 
+                                                              SIGPI_TEMPERATURA_MIN_VAL, SIGPI_TEMPERATURA_MAX_VAL);
       //pStepPro.Step();
       DateTime dFechaIncorporacionActual = dtPickerFechaAIncorporar.Value; //_sigpi.FechaIncorporacion.AddDays(1);
       //string sFechaIncorporacionActual = dFechaIncorporacionActual.ToString("dd/MM/yyyy");
 
-      bool bIncorporarTemperatura = preparar.IncorporarLecturas(_sigpiDao, "LECTUS_TEMPE", dFechaIncorporacionActual, listaTemperatura);
+      bool bIncorporarTemperatura = preparar.IncorporarLecturas(_sigpiDao, SIGPI_TABLA_LECTURAS_TEMPERATURA, dFechaIncorporacionActual, listaTemperatura);
 
       pStepPro.Message = "Incorporando Precipitacion...";
       pStepPro.Step();
       pStepPro.StepValue = 3;
 
-      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "precipitacion.xls";
+      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + LECTURAS_PRECIPITACION;
 
       _excelApp.Workbooks.Close();
 
@@ -179,7 +214,7 @@ namespace SIGPI_10
 
       try
       {
-        mesPrecipitacion = preparar.VerificarFechasLecturas(sheet, "D1");
+        mesPrecipitacion = preparar.VerificarFechasLecturas(sheet, SIGPI_CELDA_MES_PRECIPITACION);
       }
       catch (Exception ex)
       {
@@ -198,8 +233,10 @@ namespace SIGPI_10
         return;
       }
 
-      List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, "D", sColumnaDia, 0, 500);
-      bool bIncorporarPrecip = preparar.IncorporarLecturas(_sigpiDao, "LECTUS_PRECI", dFechaIncorporacionActual, listaPrecipitacion);
+      List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, SIGPI_COLUMNA_CODIGO_PRECIPITACION, sColumnaDia,
+                                                                  SIGPI_PRECIPITACION_MIN_VAL, SIGPI_PRECIPITACION_MAX_VAL);
+
+      bool bIncorporarPrecip = preparar.IncorporarLecturas(_sigpiDao, SIGPI_TABLA_LECTURAS_PRECIPITACION, dFechaIncorporacionActual, listaPrecipitacion);
 
       pStepPro.StepValue = 4;
       pProDia.HideDialog();
@@ -239,111 +276,142 @@ namespace SIGPI_10
       pStepPro.Message = "Incorporando temperatura...";
 
       SIGPIParametros parametros = _parametros;
-
+      
       PrepararInformacion preparar = new PrepararInformacion();
       string mesTemperatura, mesPrecipitacion;
-      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "temperatura.xls";
-      Microsoft.Office.Interop.Excel.Application _excelApp = new Microsoft.Office.Interop.Excel.Application();
-      Workbook workBook = _excelApp.Workbooks.Open(sRuta, Type.Missing, Type.Missing, Type.Missing,
-                          Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
-                          Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+      string sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + LECTURAS_TEMPERATURA;
+      Microsoft.Office.Interop.Excel.Application _excelApp = null;
+      Workbook workBook = null;
+      Worksheet sheet = null;
+      string sColumnaDia;
+      DateTime dFechaIncorporacionActual;
+      int iDay;
+      bool bIncorporarTemperatura;
 
-      Worksheet sheet = (Worksheet)workBook.Sheets["Hoja1"];
-      mesTemperatura = "";
       try
       {
-        mesTemperatura = preparar.VerificarFechasLecturas(sheet, "D1");
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show(ex.Message);
-        pProDia.HideDialog();
-        _excelApp.Workbooks.Close();
-        return;
-      }
-      DateTime dFechaAIncorporar = dtPickerFechaAIncorporar.Value;
-      int iDay = dFechaAIncorporar.Day;
-      if (dFechaAIncorporar.Month != ConversionMes.MesNumero(mesTemperatura.ToUpper()))
-      {
-        if (dFechaAIncorporar.Month != ConversionMes.MesNumero(mesTemperatura.ToUpper()) + 1)
+        _excelApp = new Microsoft.Office.Interop.Excel.Application();
+        workBook = _excelApp.Workbooks.Open(sRuta, Type.Missing, Type.Missing, Type.Missing,
+                            Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+                            Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+
+        sheet = (Worksheet)workBook.Worksheets.get_Item(1);    //.Sheets["max"];
+        mesTemperatura = "";
+        try
         {
-          MessageBox.Show("La fecha seleccionada no se encuentra en el archivo de lecturas. Periodo correspondiente al mes de: " + mesTemperatura);
+          mesTemperatura = preparar.VerificarFechasLecturas(sheet, SIGPI_CELDA_MES_TEMPERATURA);
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
           pProDia.HideDialog();
           _excelApp.Workbooks.Close();
           return;
         }
-      }
+        DateTime dFechaAIncorporar = dtPickerFechaAIncorporar.Value;
+        iDay = dFechaAIncorporar.Day;
+        if (dFechaAIncorporar.Month != ConversionMes.MesNumero(mesTemperatura.ToUpper()))
+        {
+          if (dFechaAIncorporar.Month != ConversionMes.MesNumero(mesTemperatura.ToUpper()) + 1)
+          {
+            MessageBox.Show("La fecha seleccionada no se encuentra en el archivo de lecturas. Periodo correspondiente al mes de: " + mesTemperatura);
+            pProDia.HideDialog();
+            _excelApp.Workbooks.Close();
+            return;
+          }
+        }
 
-      int iTotalEstaciones = preparar.TotalEstaciones(sheet, "A");
-      string sColumnaDia = preparar.ColumnaLecturaDia(sheet, 5, iDay.ToString(), "2");
-      if (sColumnaDia == "-99")
+        int iTotalEstaciones = preparar.TotalEstaciones(sheet, SIGPI_COLUMNA_CODIGO_TEMPERATURA);
+        sColumnaDia = preparar.ColumnaLecturaDia(sheet, SIGPI_COLUMNA_INICIO_DIA_TEMPERATURA, iDay.ToString(), SIGPI_FILA_DIA_TEMPERATURA);
+        if (sColumnaDia == "-99")
+        {
+          MessageBox.Show("No se encontro el dia de lectura en el archivo de Excel de temperaturas. Dia: " + iDay.ToString());
+          pProDia.HideDialog();
+          _excelApp.Workbooks.Close();
+          return;
+        }
+
+        List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, SIGPI_COLUMNA_CODIGO_TEMPERATURA,
+                                                    sColumnaDia, SIGPI_TEMPERATURA_MIN_VAL, SIGPI_TEMPERATURA_MAX_VAL);
+        pStepPro.Step();
+        dFechaIncorporacionActual = dtPickerFechaAIncorporar.Value; //_sigpi.FechaIncorporacion.AddDays(1);
+        //MessageBox.Show("lecturas a incorporar Temp. : " + listaTemperatura.Count.ToString());
+        bIncorporarTemperatura = preparar.IncorporarLecturas(_sigpiDao, SIGPI_TABLA_LECTURAS_TEMPERATURA, dFechaIncorporacionActual, listaTemperatura);
+
+        pStepPro.Message = "Incorporando Precipitacion...";
+        pStepPro.Step();
+        pStepPro.StepValue = 3;
+                
+      }
+      finally 
       {
-        MessageBox.Show("No se encontro el dia de lectura en el archivo de Excel de temperaturas. Dia: " + iDay.ToString());
-        pProDia.HideDialog();
         _excelApp.Workbooks.Close();
-        return;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        System.Runtime.InteropServices.Marshal.FinalReleaseComObject(workBook);
+        System.Runtime.InteropServices.Marshal.FinalReleaseComObject(_excelApp);
+
       }
+      
+      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + LECTURAS_PRECIPITACION;
 
-      List<Lectura> listaTemperatura = preparar.ObtenerLecturas(sheet, _sigpiDao, "A", sColumnaDia, -20, 50);
-      pStepPro.Step();
-      DateTime dFechaIncorporacionActual = dtPickerFechaAIncorporar.Value; //_sigpi.FechaIncorporacion.AddDays(1);
-      //MessageBox.Show("lecturas a incorporar Temp. : " + listaTemperatura.Count.ToString());
-      bool bIncorporarTemperatura = preparar.IncorporarLecturas(_sigpiDao, "LECTUS_TEMPE", dFechaIncorporacionActual, listaTemperatura);
-
-      pStepPro.Message = "Incorporando Precipitacion...";
-      pStepPro.Step();
-      pStepPro.StepValue = 3;
-
-      sRuta = parametros.RutaSIGPI + "\\" + parametros.Lecturas + "\\" + "precipitacion.xls";
-
-      _excelApp.Workbooks.Close();
-
-      _excelApp = new Microsoft.Office.Interop.Excel.Application();
-      workBook = _excelApp.Workbooks.Open(sRuta, Type.Missing, Type.Missing, Type.Missing,
-                          Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
-                          Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-
-      sheet = (Worksheet)workBook.Sheets["Hoja1"];
 
       try
       {
-        mesPrecipitacion = preparar.VerificarFechasLecturas(sheet, "A1");
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show(ex.Message);
+        _excelApp = new Microsoft.Office.Interop.Excel.Application();
+        workBook = _excelApp.Workbooks.Open(sRuta, Type.Missing, Type.Missing, Type.Missing,
+                            Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+                            Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+
+        sheet = (Worksheet)workBook.Worksheets.get_Item(1);   //Sheets["precipitacion"];
+
+        try
+        {
+          mesPrecipitacion = preparar.VerificarFechasLecturas(sheet, SIGPI_CELDA_MES_PRECIPITACION);
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(ex.Message);
+          pProDia.HideDialog();
+          _excelApp.Workbooks.Close();
+          return;
+        }
+
+        sColumnaDia = preparar.ColumnaLecturaDia(sheet, SIGPI_COLUMNA_INICIO_DIA_PRECIPITACION, iDay.ToString(), SIGPI_FILA_DIA_PRECIPITACION);
+        if (sColumnaDia == "-99")
+        {
+          MessageBox.Show("No se encontro el dia de lectura en el archivo de Excel de precipitacion. Dia: " + iDay.ToString());
+          pProDia.HideDialog();
+          _excelApp.Workbooks.Close();
+          return;
+        }
+
+        List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, SIGPI_COLUMNA_CODIGO_PRECIPITACION,
+                                                                sColumnaDia, SIGPI_PRECIPITACION_MIN_VAL, SIGPI_PRECIPITACION_MAX_VAL);
+        //MessageBox.Show("lecturas a incorporar Prec. : " + listaPrecipitacion.Count.ToString());
+        bool bIncorporarPrecip = preparar.IncorporarLecturas(_sigpiDao, SIGPI_TABLA_LECTURAS_PRECIPITACION, 
+                                                            dFechaIncorporacionActual, listaPrecipitacion);
+
+        pStepPro.StepValue = 4;
         pProDia.HideDialog();
-        _excelApp.Workbooks.Close();
-        return;
-      }
 
-      sColumnaDia = preparar.ColumnaLecturaDia(sheet, 5, iDay.ToString(), "2");
-      if (sColumnaDia == "-99")
+        if (bIncorporarTemperatura && bIncorporarPrecip)
+        {
+          txtUltimoDiaIncorporacion.Text = dtPickerFechaAIncorporar.Value.ToLongDateString();
+          preparar.ActualizarFechaIncorporacion(dtPickerFechaAIncorporar.Value, _sigpiDao);
+          _sigpi.FechaIncorporacion = dtPickerFechaAIncorporar.Value;
+          dtPickerFechaAProcesar.Value = dtPickerFechaAIncorporar.Value;
+          dtPickerFechaAIncorporar.Value = dtPickerFechaAIncorporar.Value.AddDays(1);
+          MessageBox.Show("Incorporacion de lecturas terminada!");
+        }        
+      }
+      finally 
       {
-        MessageBox.Show("No se encontro el dia de lectura en el archivo de Excel de precipitacion. Dia: " + iDay.ToString());
-        pProDia.HideDialog();
         _excelApp.Workbooks.Close();
-        return;
+        
       }
-
-      List<Lectura> listaPrecipitacion = preparar.ObtenerLecturas(sheet, _sigpiDao, "A", sColumnaDia, 0, 500);
-      //MessageBox.Show("lecturas a incorporar Prec. : " + listaPrecipitacion.Count.ToString());
-      bool bIncorporarPrecip = preparar.IncorporarLecturas(_sigpiDao, "LECTUS_PRECI", dFechaIncorporacionActual, listaPrecipitacion);
-
-      pStepPro.StepValue = 4;
-      pProDia.HideDialog();
-
-      if (bIncorporarTemperatura && bIncorporarPrecip)
-      {
-        txtUltimoDiaIncorporacion.Text = dtPickerFechaAIncorporar.Value.ToLongDateString();
-        preparar.ActualizarFechaIncorporacion(dtPickerFechaAIncorporar.Value, _sigpiDao);
-        _sigpi.FechaIncorporacion = dtPickerFechaAIncorporar.Value;
-        dtPickerFechaAProcesar.Value = dtPickerFechaAIncorporar.Value;
-        dtPickerFechaAIncorporar.Value = dtPickerFechaAIncorporar.Value.AddDays(1);
-        MessageBox.Show("Incorporacion de lecturas terminada!");
-
-      }
-      _excelApp.Workbooks.Close();
+      
     }
 
     private void btnProcesar_Click_1(object sender, EventArgs e)
@@ -367,7 +435,7 @@ namespace SIGPI_10
       ProcesarLecturas procesarLecturas = new ProcesarLecturas();
       try
       {
-        procesarLecturas.CalcularResultadosPrecipitacion(_sigpiDao, "DEFI_PRECI", "LECTUS_PRECI", dtPickerFechaAProcesar.Value, 5);
+        procesarLecturas.CalcularResultadosPrecipitacion(_sigpiDao, "DEFI_PRECI", "LECTUS_PRECI", dtPickerFechaAProcesar.Value, 10);
       }
       catch (Exception ex)
       {
@@ -378,7 +446,7 @@ namespace SIGPI_10
       pStepPro.Message = "Procesando Temperatura...";
       try
       {
-        procesarLecturas.CalcularResultadosTemperatura(_sigpiDao, "DEFI_TEMPE", "LECTUS_TEMPE", dtPickerFechaAProcesar.Value, "T5", 5);
+        procesarLecturas.CalcularResultadosTemperatura(_sigpiDao, "DEFI_TEMPE", "LECTUS_TEMPE", dtPickerFechaAProcesar.Value, "T5", 10);
       }
       catch (Exception ex)
       {
@@ -406,7 +474,6 @@ namespace SIGPI_10
       this.Close();
     }
 
-   
 
   }
 }

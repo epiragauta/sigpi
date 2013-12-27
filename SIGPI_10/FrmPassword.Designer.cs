@@ -92,8 +92,10 @@
       // 
       // FrmPassword
       // 
+      this.AcceptButton = this.btnAceptar;
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.CancelButton = this.btnCancel;
       this.ClientSize = new System.Drawing.Size(269, 108);
       this.Controls.Add(this.btnCancel);
       this.Controls.Add(this.btnAceptar);
@@ -102,7 +104,8 @@
       this.Controls.Add(this.label2);
       this.Controls.Add(this.label1);
       this.Name = "FrmPassword";
-      this.Text = "FrmPassword";
+      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+      this.Text = "Autenticacion";
       this.ResumeLayout(false);
       this.PerformLayout();
 
