@@ -18,6 +18,10 @@ using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.AnalysisTools;
 using ESRI.ArcGIS.ConversionTools;
 using ESRI.ArcGIS.Geoprocessor;
+using ESRI.ArcGIS.Geometry;
+using ESRI.ArcGIS.Output;
+using ESRI.ArcGIS.esriSystem;
+using System.Diagnostics;
 
 namespace SIGPI_10
 {
@@ -250,12 +254,34 @@ namespace SIGPI_10
           IMap pMap = pMxDoc.FocusMap;
 
           AsignarSimbologiaProbabilidad(pRLayer);
-          pMap.AddLayer(pRLayer);
-          if (pMap.LayerCount > 0)
+          IEnumLayer pEnumLayer = pMap.Layers;
+          ILayer pLayer = pEnumLayer.Next();
+          Boolean bLayerInMap = false;
+          while (pLayer != null)
           {
-            pMap.MoveLayer(pRLayer, pMap.LayerCount - 1);
+            if (pLayer.Name.Contains("Amenaza_"))
+            {
+              pLayer.Visible = false;
+            }
+            if (pLayer.Name.Equals(sNombreCapa))
+            {
+              bLayerInMap = true;
+              pLayer.Visible = true;
+            }            
+            pLayer = pEnumLayer.Next();
           }
 
+          System.Windows.Forms.Application.DoEvents();
+
+          if (!bLayerInMap)
+          {
+            pMap.AddLayer(pRLayer);
+            if (pMap.LayerCount > 0)
+            {
+              pMap.MoveLayer(pRLayer, pMap.LayerCount - 1);
+            }
+          }
+          
           if (!(pMxDoc.ActiveView is IPageLayout))
           {
             pMxDoc.ActiveView = (IActiveView)pMxDoc.PageLayout;
@@ -286,6 +312,18 @@ namespace SIGPI_10
 
           pMxDoc.UpdateContents();
           pMxDoc.ActiveView.Refresh();
+
+
+          String fileName = Sigpi.Parametros.RutaSIGPI + "\\" + "JPG" + "\\" + sNombreCapa + "_Incendios_INTERNET_.jpg";
+          CreateJPEGFromActiveView(pMxDoc.ActiveView,fileName);
+
+          fileName = Sigpi.Parametros.RutaSIGPI + "\\" + "JPG" + "\\" + sNombreCapa + "_Incendios.jpg";
+          CreateJPEGHiResolutionFromActiveView(pMxDoc.ActiveView, fileName);
+
+          MessageBox.Show("Se ha generado el mapa de amenazas en formato JPG");
+
+          // opens the folder in explorer
+          Process.Start(Sigpi.Parametros.RutaSIGPI + "\\" + "JPG");
         }
         catch (Exception ex)
         {
@@ -489,5 +527,155 @@ namespace SIGPI_10
 
     
 
+
+    #region"Create JPEG from ActiveView"
+    // ArcGIS Snippet Title:
+    // Create JPEG from ActiveView
+    // 
+    // Long Description:
+    // Creates a .jpg (JPEG) file from IActiveView. Default values of 96 DPI are used for the image creation.
+    // 
+    // Add the following references to the project:
+    // ESRI.ArcGIS.Carto
+    // ESRI.ArcGIS.Display
+    // ESRI.ArcGIS.Geometry
+    // ESRI.ArcGIS.Output
+    // ESRI.ArcGIS.System
+    // 
+    // Intended ArcGIS Products for this snippet:
+    // ArcGIS Desktop (ArcEditor, ArcInfo, ArcView)
+    // ArcGIS Engine
+    // ArcGIS Server
+    // 
+    // Applicable ArcGIS Product Versions:
+    // 9.2
+    // 9.3
+    // 9.3.1
+    // 10.0
+    // 
+    // Required ArcGIS Extensions:
+    // (NONE)
+    // 
+    // Notes:
+    // This snippet is intended to be inserted at the base level of a Class.
+    // It is not intended to be nested within an existing Method.
+    // 
+
+    ///<summary>Creates a .jpg (JPEG) file from IActiveView. Default values of 96 DPI are used for the image creation.</summary>
+    ///
+    ///<param name="activeView">An IActiveView interface</param>
+    ///<param name="pathFileName">A System.String that the path and filename of the JPEG you want to create. Example: "C:\temp\test.jpg"</param>
+    /// 
+    ///<returns>A System.Boolean indicating the success</returns>
+    /// 
+    ///<remarks></remarks>
+    public System.Boolean CreateJPEGFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName)
+    {
+      //parameter check
+      if (activeView == null || !(pathFileName.EndsWith(".jpg")))
+      {
+        return false;
+      }
+      IExport export = (IExport)new ExportJPEG();
+      export.ExportFileName = pathFileName;
+
+      // Microsoft Windows default DPI resolution
+      export.Resolution = 96;
+      tagRECT exportRECT = activeView.ExportFrame;
+      ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
+      envelope.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
+      export.PixelBounds = envelope;
+      System.Int32 hDC = export.StartExporting();
+      activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null);
+
+      // Finish writing the export file and cleanup any intermediate files
+      export.FinishExporting();
+      export.Cleanup();
+
+      return true;
+    }
+    #endregion
+
+
+    #region"Create JPEG (hi-resolution) from ActiveView"
+    // ArcGIS Snippet Title:
+    // Create JPEG (hi-resolution) from ActiveView
+    // 
+    // Long Description:
+    // Creates a .jpg (JPEG) file from IActiveView using a high resolution exporting option. Default values of 96 DPI are overwritten to 300 used for the image creation.
+    // 
+    // Add the following references to the project:
+    // ESRI.ArcGIS.Carto
+    // ESRI.ArcGIS.Display
+    // ESRI.ArcGIS.Geometry
+    // ESRI.ArcGIS.Output
+    // 
+    // Intended ArcGIS Products for this snippet:
+    // ArcGIS Desktop (ArcEditor, ArcInfo, ArcView)
+    // ArcGIS Engine
+    // ArcGIS Server
+    // 
+    // Applicable ArcGIS Product Versions:
+    // 9.2
+    // 9.3
+    // 9.3.1
+    // 10.0
+    // 
+    // Required ArcGIS Extensions:
+    // (NONE)
+    // 
+    // Notes:
+    // This snippet is intended to be inserted at the base level of a Class.
+    // It is not intended to be nested within an existing Method.
+    // 
+
+    ///<summary>Creates a .jpg (JPEG) file from the ActiveView using a high resolution exporting option. Default values of 96 DPI are overwritten to 300 used for the image creation.</summary>
+    ///
+    ///<param name="activeView">An IActiveView interface</param>
+    ///<param name="pathFileName">A System.String that the path and filename of the JPEG you want to create. Example: "C:\temp\hiResolutionTest.jpg"</param>
+    /// 
+    ///<returns>A System.Boolean indicating the success</returns>
+    /// 
+    ///<remarks></remarks>
+    public System.Boolean CreateJPEGHiResolutionFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName)
+    {
+      //parameter check
+      if (activeView == null || !(pathFileName.EndsWith(".jpg")))
+      {
+        return false;
+      }
+      ESRI.ArcGIS.Output.IExport export = (IExport)new ESRI.ArcGIS.Output.ExportJPEG();
+      export.ExportFileName = pathFileName;
+
+      // Because we are exporting to a resolution that differs from screen 
+      // resolution, we should assign the two values to variables for use 
+      // in our sizing calculations
+      System.Int32 screenResolution = 96;
+      System.Int32 outputResolution = 300;
+
+      export.Resolution = outputResolution;
+
+      tagRECT exportRECT; // This is a structure
+      exportRECT.left = 0;
+      exportRECT.top = 0;
+      exportRECT.right = activeView.ExportFrame.right * (outputResolution / screenResolution);
+      exportRECT.bottom = activeView.ExportFrame.bottom * (outputResolution / screenResolution);
+
+      // Set up the PixelBounds envelope to match the exportRECT
+      ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
+      envelope.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
+      export.PixelBounds = envelope;
+
+      System.Int32 hDC = export.StartExporting();
+
+      activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
+      export.FinishExporting();
+      export.Cleanup();
+
+      return true;
+    }
+    #endregion
+
   }
 }
+

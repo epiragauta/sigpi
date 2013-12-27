@@ -30,7 +30,7 @@ namespace SIGPI_10
     private static String PATH_SIGPI_NVI = "PATH_SIGPI_NVI";
     private static String MODIS_DIR_APP = "modis";
     private static String NVI = "nvi";
-    private static String RESULT_NVI = "tmpMosaic.500m_16_days_NDVI_prj_magna_adjust.tif";
+    private static String RESULT_NVI = "tmpMosaic.500m_16_days_NDVI_GEO.tif";
     
 
     WebBrowser mywebBrowser;
@@ -203,7 +203,7 @@ namespace SIGPI_10
         }
         else
         {
-          MessageBox.Show(String.Format("El algoritmo se encuentra trabajando con la ultima información MODIS disponible. FEcha: {0}",dateFolder),
+          MessageBox.Show(String.Format("El algoritmo se encuentra trabajando con la ultima información MODIS disponible. Fecha: {0}",dateFolder),
                           "SIGPI",MessageBoxButtons.OK,MessageBoxIcon.Information);
         }
 
