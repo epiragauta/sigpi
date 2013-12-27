@@ -488,7 +488,7 @@ namespace SIGPI_10
       string sAmenazaXTemperaturaCombinada = sRutaFileGDB + "\\" + "amenaza_x_temperatura_combinada";
       string sEstVirtualesPrecipitacion = sRutaFileGDB + "\\" + "estaciones_virtuales_precipitacion";
       string sAmenazaXPrecipitacionCombinada = sRutaFileGDB + "\\" + "amenaza_x_precipitacion_combinada";
-      string sAmenazaFinalBrutaNVI = sRutaFileGDB + "\\" + "amenaza_incendio_bruta_nvi";
+      string sAmenazaFinalBrutaNVI = sRutaFileGDB + "\\" + "amenaza_incend_raw_nvi";
       string sNVITempReclass = sRutaFileGDB + "\\" + "nvi_reclass_temp";
       string sFromField = "FROM_";
       string sToField = "TO_";
@@ -498,6 +498,7 @@ namespace SIGPI_10
       string sTipoEstadistico = parametros.TipoEstadistico; //"MAXIMUM";      
       string sAmenazaXPrecipReclass = sAmenazaXPrecipitacion + "_reclass";
       string sAmenazaXTempReclass = sAmenazaXTemperatura + "_reclass";
+      string nvi = parametros.RutaSIGPI + "NVI" + "\\" + "tmpMosaic.500m_16_days_NDVI_GEO.tif";
 
       double dPesoPrecipitacion = parametros.PesoPrecipitacion;  //0.29;
       double dPesoTemperatura = parametros.PesoTemperatura;  //0.24;
@@ -508,7 +509,7 @@ namespace SIGPI_10
       IDatasetName pDSName2 = new FeatureClassNameClass();
       IExportOperation pExportOp = new ExportOperationClass();
 
-      string sEstacionesVirtuales = @"C:\SIGPI\datos\ESTACIONES VIRTUALES\" + "EstacionesVirtuales.shp";
+      string sEstacionesVirtuales =  sRutaFileGDB + "\\" + "EstacionesVirtuales.shp";
       ExtractValuesToPoints extractValPoint = new ExtractValuesToPoints();
       extractValPoint.in_point_features = sEstacionesVirtuales;
       extractValPoint.interpolate_values = "NONE";
@@ -771,43 +772,7 @@ namespace SIGPI_10
         pProDia.HideDialog();
         return;
       }
-
-      if (txtRutaNVI.Text.Trim() != "")
-      {
-        //Geoprocessor gp2 = new Geoprocessor();
-        //Con pCon = new Con();
-        //pCon.in_conditional_raster = txtRutaNVI.Text;
-        //pCon.in_true_raster_or_constant = 0;
-        //pCon.in_false_raster_or_constant = -1;
-        //pCon.where_clause = "VALUE <= 0";
-        //pCon.out_raster = sNVITempReclass;
-        //try
-        //{
-        //  gp2.Execute(pCon, null);
-        //}
-        //catch (Exception ex)
-        //{
-        //  MessageBox.Show(ex.Message);
-        //}
-        //gp2 = null;
-
-        //sExpression = "( Raster('" + sAmenazasParciales + "') + Raster('" + sNVITempReclass + "'))";
-        //sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
-        //mapAlgebra.expression = sExpression;
-        //mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
-
-        //try
-        //{
-        //  gp.Execute(mapAlgebra, null);
-        //  sAmenazasParciales = sAmenazaFinalBrutaNVI;
-        //}
-        //catch (Exception ex)
-        //{
-        //  MessageBox.Show(ex.Message);
-        //}
-      }
-
-
+      
       sExpression = "( Raster(r'" + sAmenazaXPrecipReclass + "') * " + dPesoPrecipitacion.ToString().Replace(",", ".") + ") + " +
                     "( Raster(r'" + sAmenazaXTempReclass + "') * " + dPesoTemperatura.ToString().Replace(",", ".") + ") + " +
                     "( Raster(r'" + sAmenazasParciales + "') * " + dPesoAmenazasParciales.ToString().Replace(",", ".") + ")";
@@ -815,7 +780,7 @@ namespace SIGPI_10
       //mapAlgebra.expression_string = sExpression;
       //mapAlgebra.out_raster = sAmenazaBruta;
 
-      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
+      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");      
       mapAlgebra.expression = sExpression;
       mapAlgebra.output_raster = sAmenazaBruta;
 
@@ -829,9 +794,28 @@ namespace SIGPI_10
         MessageBox.Show(ex.Message);
       }
 
+      //if (txtRutaNVI.Text.Trim() != "")
+      //{
+      Geoprocessor gp2 = new Geoprocessor();
+      mapAlgebra = new RasterCalculator();
+      sExpression = "Con (Raster(r'" + nvi + "') < 0.75, Raster(r'" + sAmenazaBruta + "'), Raster(r'" + sAmenazaBruta + "') -1)";
+      sExpression = sExpression.Replace("\\\\", "/").Replace("\\", "/");
+      mapAlgebra.expression = sExpression;
+      mapAlgebra.output_raster = sAmenazaFinalBrutaNVI;
+           
+      try
+      {
+        gp2.Execute(mapAlgebra, null);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.Message);
+      }
+      
+      //}
 
 
-      rbt.in_raster = sAmenazaBruta;
+      rbt.in_raster = sAmenazaFinalBrutaNVI;  // sAmenazaBruta;
       rbt.in_remap_table = sTablaReclassIncendios; // parametros.RutaGBD + "\\" + sTablaReclassIncendios;
       rbt.from_value_field = sFromField;
       rbt.to_value_field = sToField;

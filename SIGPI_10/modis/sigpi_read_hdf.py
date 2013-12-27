@@ -50,7 +50,7 @@ response = urllib2.urlopen(url)
 html=response.read()
 soup=BeautifulSoup(html)
 #  hdf_files =["h10v07","h11v07","h10v08","h11v08","h10v09","h11v09"]
-hdf_files =["h10v08","h11v08"]
+hdf_files = ["h10v07","h11v07","h10v08","h11v08","h10v09","h11v09"]
 
 fo = open("list.txt","wb")
 for a in soup.findAll("a"):
